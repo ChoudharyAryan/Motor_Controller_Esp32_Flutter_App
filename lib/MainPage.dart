@@ -18,16 +18,6 @@ class _MainPage extends State<MainPage> {
   bool isLedON = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => MotorControllerBloc(),
@@ -92,7 +82,7 @@ class _MainPage extends State<MainPage> {
                       },
                     )
                   : state.isConnecting
-                      ? const CircularProgressIndicator()
+                      ? const Center(child: CircularProgressIndicator())
                       : state.isConnected
                           ? Column(
                               children: [
@@ -110,9 +100,9 @@ class _MainPage extends State<MainPage> {
                                         ? const Text('Toogle off')
                                         : const Text('Toogle on')),
                                 StreamBuilder(
-                                    stream: context
-                                        .read<MotorControllerBloc>()
-                                        .dataStream,
+                                    stream: context.select(
+                                        (MotorControllerBloc bloc) =>
+                                            bloc.state.data),
                                     builder: (context, snapshot) {
                                       if (snapshot.hasData) {
                                         log('snaphasdata');

@@ -14,10 +14,12 @@ part 'motor_controller_state.dart';
 class MotorControllerBloc
     extends Bloc<MotorControllerEvent, MotorControllerState> {
   BluetoothConnection? connection;
-  final _dataController = StreamController<String>();
+  StreamController<String>? _dataController;
+  Stream<String> get dataStream {
+    _dataController ??= StreamController<String>();
+    return _dataController!.stream;
+  }
 
-  Stream<String> get dataStream => _dataController.stream;
-  StreamSubscription? streamSubscription;
   String _messageBuffer = '';
   StreamSubscription? streamSubscriptiondata;
   String incomingData = '';
@@ -35,6 +37,7 @@ class MotorControllerBloc
   void _startDiscovery(
       StartDiscovery event, Emitter<MotorControllerState> emit) async {
     try {
+      event.results.clear();
       log('Inside the (try catch block of _startDiscovery');
       await for (BluetoothDiscoveryResult r in FlutterBluetoothSerial.instance
           .startDiscovery()
@@ -66,7 +69,9 @@ class MotorControllerBloc
 
         try {
           log('have connection and about to begin start listening');
-
+          _dataController?.close();
+          _dataController = StreamController<String>();
+          streamSubscriptiondata?.cancel();
           streamSubscriptiondata = connection?.input?.listen(_onDataRecived);
           log('What is the probelem $incomingData');
 
@@ -110,11 +115,9 @@ class MotorControllerBloc
       log('Disconnect Function');
       event.results.clear();
       connection?.dispose();
-      _dataController.close();
-      streamSubscription?.cancel();
       streamSubscriptiondata?.cancel();
-      streamSubscription = null;
       streamSubscriptiondata = null;
+      _dataController?.close();
     } on Exception catch (e) {
       emit(MotorControllerException(
           exception: e, isConnecting: false, isDiscovering: false));
@@ -128,14 +131,13 @@ class MotorControllerBloc
         isDisconnecting: event.isDisconnecting));
   }
 
-  // @override
-  // Future<void> close() async {
-  //   log('CLOSE FUNCTION');
-  //   await _dataController.close();
-  //   await streamSubscription?.cancel();
-  //   await streamSubscriptiondata?.cancel();
-  //   return super.close();
-  // }
+  @override
+  Future<void> close() async {
+    log('CLOSE FUNCTION');
+    await _dataController?.close();
+    await streamSubscriptiondata?.cancel();
+    return super.close();
+  }
 
   _onDataRecived(Uint8List data) {
     log('inside the _onDataRecived Function in motor_controller_bloc');
@@ -180,6 +182,6 @@ class MotorControllerBloc
           : _messageBuffer + dataString);
     }
     log('what is inside the incomingData variable : $incomingData');
-    _dataController.add(incomingData);
+    _dataController?.add(incomingData);
   }
 }
