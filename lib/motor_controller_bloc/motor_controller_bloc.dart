@@ -5,6 +5,7 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:meta/meta.dart';
 
@@ -20,9 +21,11 @@ class MotorControllerBloc
     return _dataController!.stream;
   }
 
+  BluetoothState _bluetoothState = BluetoothState.UNKNOWN;
   String _messageBuffer = '';
   StreamSubscription? streamSubscriptiondata;
   String incomingData = '';
+  DateTime _lastDiscoveryTime = DateTime.now();
   MotorControllerBloc()
       : super(const MotorControllerInitial(
           isConnecting: false,
@@ -32,39 +35,94 @@ class MotorControllerBloc
     on<ConnectToDeviceAndStartListening>(_connectToDeviceAndStartListening);
     on<Disconnect>(_disconnect);
     on<SendMessage>(_sendMessage);
+    on<EmitInitial>(_emitInitial);
+  }
+
+  void _emitInitial(EmitInitial event, Emitter<MotorControllerState> emit) {
+    emit(const MotorControllerInitial(
+        isDiscovering: false, isConnecting: false));
   }
 
   void _startDiscovery(
       StartDiscovery event, Emitter<MotorControllerState> emit) async {
-    try {
+    if (DateTime.now().difference(_lastDiscoveryTime).inSeconds < 3) {
+      return;
+    }
+    _lastDiscoveryTime = DateTime.now();
+    log('inside the _startDiscovery function');
+    if (!_bluetoothState.isEnabled) {
+      await FlutterBluetoothSerial.instance
+          .requestEnable()
+          .then((_) => emit(const MotorControllerInitial(
+                isDiscovering: false,
+                isConnecting: false,
+              )));
+
       event.results.clear();
+      emit(const MotorControllerDiscovering(
+          isDiscoverd: false,
+          isDiscovering: true,
+          isloading: false,
+          isConnecting: false,
+          results: [],
+          exception: null));
+    }
+    try {
       log('Inside the (try catch block of _startDiscovery');
       await for (BluetoothDiscoveryResult r in FlutterBluetoothSerial.instance
           .startDiscovery()
           .where((r) => r.device.name?.startsWith('ESP32') ?? false)) {
+        log('adding the discovey result to the list');
         event.results.add(r);
-        log('discovery result is ${r.device.name}');
         emit(MotorControllerDiscovering(
-            isDiscovering: true, isConnecting: false, results: event.results));
+            isDiscovering: true,
+            isDiscoverd: false,
+            isloading: false,
+            isConnecting: false,
+            results: event.results,
+            exception: null));
+        log('discovery result is ${r.device.name}');
       }
     } on Exception catch (e) {
       log('There is an exception inside the _startDiscovery function');
       emit(MotorControllerException(
-          exception: e, isConnecting: false, isDiscovering: false));
+          exception: e,
+          isConnected: false,
+          isConnecting: false,
+          isDiscovering: false));
+    }
+    if (event.results.isEmpty) {
+      log('results list is empty');
+      emit(const MotorControllerInitial(
+          isDiscovering: false,
+          isConnecting: false,
+          string: 'no device found'));
     }
 
-    log('Just Before the DiscoveringDone State');
-    emit(const MotorControllerDiscoveringDone(isDiscoverd: true));
-    log('Just after the DiscoveringDone state');
+    // emit(MotorControllerDiscovering(
+    //     isDiscovering: false,
+    //     isDiscoverd: true,
+    //     isloading: false,
+    //     isConnecting: false,
+    //     results: event.results,
+    //     exception: null));
   }
 
   void _connectToDeviceAndStartListening(ConnectToDeviceAndStartListening event,
       Emitter<MotorControllerState> emit) async {
-    emit(const MotorControllerConnecting(isConnecting: true, exception: null));
+    if (!_bluetoothState.isEnabled) {
+      await FlutterBluetoothSerial.instance.requestEnable();
+    }
+    emit(const MotorControllerConnecting(
+        isDiscovering: false,
+        isDiscovered: false,
+        isConnecting: true,
+        exception: null));
     try {
       log('INSIDE the try catch bloc of _connectTODeviceANdSTsrtListening');
       await BluetoothConnection.toAddress(event.device.address)
           .then((_connection) {
+        log('Pressed the button too many times');
         connection = _connection;
 
         try {
@@ -74,6 +132,7 @@ class MotorControllerBloc
           streamSubscriptiondata?.cancel();
           streamSubscriptiondata = connection?.input?.listen(_onDataRecived);
           log('What is the probelem $incomingData');
+          _sendMessage(const SendMessage('a'), emit);
 
           emit(MotorControllerConnectedAndListening(
               isDiscovering: false,
@@ -83,21 +142,29 @@ class MotorControllerBloc
               exception: null));
         } on Exception catch (e) {
           log('there is an exception inside the emitting the MotorControllerConnectedAndListening');
-          emit(MotorControllerConnectedAndListening(
-              isDiscovering: false,
-              isConnecting: false,
-              isConnected: false,
-              data: dataStream,
-              exception: e));
+          emit(MotorControllerException(
+            exception: e,
+            isConnected: true,
+            isConnecting: false,
+            isDiscovering: false,
+          ));
         }
       });
     } on Exception catch (e) {
-      emit(MotorControllerConnecting(isConnecting: false, exception: e));
+      log('There is an exception inside the _ConnectedToDeviceANdStartLidtening function');
+      emit(MotorControllerException(
+          exception: e,
+          isConnected: false,
+          isConnecting: false,
+          isDiscovering: false));
     }
   }
 
   void _sendMessage(
       SendMessage event, Emitter<MotorControllerState> emit) async {
+    if (!_bluetoothState.isEnabled) {
+      await FlutterBluetoothSerial.instance.requestEnable();
+    }
     try {
       log('Inside the sendMessage function');
       String text = event.text;
@@ -105,8 +172,12 @@ class MotorControllerBloc
       connection?.output.add(utf8.encode("$text\r\n"));
       await connection?.output.allSent;
     } on Exception catch (e) {
+      log('There is an exception inside the _sendMessage function');
       emit(MotorControllerException(
-          exception: e, isConnecting: false, isDiscovering: false));
+          exception: e,
+          isConnected: true,
+          isConnecting: false,
+          isDiscovering: false));
     }
   }
 
@@ -114,14 +185,22 @@ class MotorControllerBloc
     try {
       log('Disconnect Function');
       event.results.clear();
+      for (int i = 0; i < event.list.length; i++) {
+        if (event.list[i][2] == true) {
+          event.list[i][2] = false;
+        }
+      }
       connection?.dispose();
       streamSubscriptiondata?.cancel();
       streamSubscriptiondata = null;
       _dataController?.close();
     } on Exception catch (e) {
+      log('There is an exception inside the _disconnect function');
       emit(MotorControllerException(
-          exception: e, isConnecting: false, isDiscovering: false));
-      return;
+          exception: e,
+          isConnected: true,
+          isConnecting: false,
+          isDiscovering: false));
     }
     emit(MotorControllerDisconnected(
         exception: null,
@@ -129,6 +208,8 @@ class MotorControllerBloc
         isConnecting: false,
         results: event.results,
         isDisconnecting: event.isDisconnecting));
+    // emit(const MotorControllerInitial(
+    //     isDiscovering: false, isConnecting: false));
   }
 
   @override
@@ -136,6 +217,8 @@ class MotorControllerBloc
     log('CLOSE FUNCTION');
     await _dataController?.close();
     await streamSubscriptiondata?.cancel();
+    log('inside the close function');
+
     return super.close();
   }
 

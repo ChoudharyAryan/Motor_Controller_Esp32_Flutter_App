@@ -38,6 +38,14 @@ dependencies:
   bloc: ^8.1.2
   flutter_bloc: ^8.1.3
   equatable: ^2.0.3
+  google_fonts: ^6.1.0
+  font_awesome_flutter: ^10.6.0
+  loading_animation_widget: ^1.2.0+4
+  shared_preferences: ^2.2.2
+  smooth_page_indicator: ^1.1.0
+  lottie: ^2.7.0
+  animated_text_kit: ^4.2.2
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -61,8 +69,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - lib/images/
+    - lib/animations/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

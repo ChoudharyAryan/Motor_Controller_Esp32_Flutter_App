@@ -23,5 +23,13 @@ class SendMessage extends MotorControllerEvent {
 class Disconnect extends MotorControllerEvent {
   final bool isDisconnecting;
   final List<BluetoothDiscoveryResult> results;
-  const Disconnect({this.isDisconnecting = false, required this.results});
+  final List list;
+  const Disconnect(
+      {this.isDisconnecting = false,
+      required this.results,
+      required this.list});
+}
+
+class EmitInitial extends MotorControllerEvent {
+  const EmitInitial();
 }
