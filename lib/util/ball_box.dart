@@ -2,18 +2,71 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:motor_controller_esp32/util/myPopUp.dart';
+import 'package:motor_controller_esp32/util/normalPopUp.dart';
 
 class BallBox extends StatelessWidget {
   final String ballType;
   final String iconPath;
   final bool powerOn;
   final onChanged;
+  final ballnum;
   BallBox(
       {super.key,
       required this.ballType,
       required this.onChanged,
       required this.iconPath,
-      required this.powerOn});
+      required this.powerOn,
+      required this.ballnum});
+
+  NormalPopUp normalballpopup() {
+    print('normal popup');
+    return NormalPopUp(
+      typeOfBall: const [],
+      inc: 'P',
+      dec: 'Q',
+      reset: 'R',
+    );
+  }
+
+  NormalPopUp normalfballpopup() {
+    return NormalPopUp(
+      typeOfBall: const [],
+      inc: 'S',
+      dec: 'T',
+      reset: 'U',
+    );
+  }
+
+  NormalPopUp normalsballpopup() {
+    return NormalPopUp(
+      typeOfBall: const [],
+      inc: 'V',
+      dec: 'W',
+      reset: 'X',
+    );
+  }
+
+  MyPopUp rightswpopup() {
+    return MyPopUp(
+        typeOfBall: const [],
+        m1inc: 'p',
+        m2inc: 'q',
+        m1dec: 's',
+        m2dec: 't',
+        reset: 'u');
+  }
+
+  MyPopUp leftswpopup() {
+    print('inside the leftswpopup function');
+    return MyPopUp(
+        typeOfBall: const [],
+        m1inc: 'v',
+        m2inc: 'w',
+        m1dec: 'x',
+        m2dec: 'y',
+        reset: 'z');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +80,31 @@ class BallBox extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset(
-              iconPath,
-              height: 50,
-              color: powerOn ? Colors.white : Colors.black,
+            GestureDetector(
+              onLongPress: () {
+                print('called the long press button');
+                if (ballnum == 0) {
+                  print('ball num is 0');
+                  normalballpopup();
+                } else if (ballnum == 1) {
+                  normalfballpopup();
+                } else if (ballnum == 2) {
+                  normalsballpopup();
+                } else if (ballnum == 3) {
+                  rightswpopup();
+                } else if (ballnum == 4) {
+                  print('inside the leftswing ball');
+                  leftswpopup();
+                } else {
+                  print('simr problem');
+                  null;
+                }
+              },
+              child: Image.asset(
+                iconPath,
+                height: 50,
+                color: powerOn ? Colors.white : Colors.black,
+              ),
             ),
             Row(
               //mainAxisAlignment: MainAxisAlignment.start,

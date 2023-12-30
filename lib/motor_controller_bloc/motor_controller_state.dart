@@ -105,14 +105,17 @@ class MotorControllerConnectedAndListening extends MotorControllerState {
 class MotorControllerDisconnected extends MotorControllerState {
   final Exception? exception;
   final bool isDisconnecting;
+  final String? str;
   final List<BluetoothDiscoveryResult> results;
   MotorControllerDisconnected({
     required this.exception,
     required bool isDiscovering,
     required this.results,
     required this.isDisconnecting,
+    required this.str,
     required bool isConnecting,
   }) : super(
+            string: str,
             isConnecting: isConnecting,
             isDisconnected: true,
             isDiscovering: isDiscovering,

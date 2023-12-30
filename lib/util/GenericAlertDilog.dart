@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 
 Future<void> ShowMyDilog(BuildContext context, String content) async {
   return showDialog<void>(
@@ -68,6 +71,34 @@ Future<String?> getNameDilog(
             child: const Text('done'),
             onPressed: () {
               Navigator.of(context).pop(_texteditingcontroller.text);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<int?> ShowMyWarning(BuildContext context) async {
+  return showDialog<int?>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('warning'),
+        content: const Text(
+            'you are restarting The Bowler you will be disconnected and have reconnect to the device '),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('confirm'),
+            onPressed: () {
+              Navigator.of(context).pop(1);
+            },
+          ),
+          TextButton(
+            child: const FaIcon(FontAwesomeIcons.ban),
+            onPressed: () {
+              Navigator.of(context).pop(0);
             },
           ),
         ],

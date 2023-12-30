@@ -29,14 +29,14 @@ class _MainPage extends State<MainPage> {
   bool isoff = false;
   late SharedPreferences pref;
   List typesOfBalls = [
-    ['Normal', 'lib/images/stump.png', true, 'a'],
-    ['Normal Fast', 'lib/images/stump.png', false, 'b'],
-    ['Normal Slow', 'lib/images/stump.png', false, 'c'],
-    ['Right Swing', 'lib/images/stump.png', false, 'd'],
-    ['Left Swing', 'lib/images/stump.png', false, 'e'],
-    ['Right Spin', 'lib/images/stump.png', false, 'f'],
-    ['Left Spin', 'lib/images/stump.png', false, 'g'],
-    ['Yorker', 'lib/images/stump.png', false, 'h'],
+    ['Normal', 'lib/images/stump.png', false, 'a', 1],
+    ['Normal Fast', 'lib/images/stump.png', false, 'b', 2],
+    ['Normal Slow', 'lib/images/stump.png', false, 'c', 3],
+    ['Right Swing', 'lib/images/stump.png', false, 'd', 4],
+    ['Left Swing', 'lib/images/stump.png', false, 'e', 5],
+    // ['Right Spin', 'lib/images/stump.png', false, 'f'],
+    // ['Left Spin', 'lib/images/stump.png', false, 'g'],
+    // ['Yorker', 'lib/images/stump.png', false, 'h'],
   ];
 
   void powerSwitchHadChanged(bool value, int index) {
@@ -53,6 +53,7 @@ class _MainPage extends State<MainPage> {
   @override
   void initState() {
     _loadUserName();
+
     super.initState();
   }
 
@@ -66,6 +67,25 @@ class _MainPage extends State<MainPage> {
     await pref.setString('username', newUsername);
     _loadUserName();
   }
+
+  void _startTimer() async {
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      // Trigger setState every 2 seconds
+      setState(() {});
+      //_startTimer();
+    });
+  }
+
+  // int onsec() {
+  //   int res = -1;
+  //   for (int i = 0; i < typesOfBalls.length; i++) {
+  //     if (typesOfBalls[i][2] == true) {
+  //       res = i;
+  //       break;
+  //     }
+  //   }
+  //   return res;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +104,11 @@ class _MainPage extends State<MainPage> {
             }
           } else if (state.string != null) {
             ShowErrorSnackBar(context, state.string!);
+          }
+          if (state is MotorControllerDiscovering) {
+            //setState(() {});
+
+            _startTimer();
           }
         },
         child: BlocBuilder<MotorControllerBloc, MotorControllerState>(
@@ -150,7 +175,17 @@ class _MainPage extends State<MainPage> {
                                   style: GoogleFonts.bebasNeue(fontSize: 35),
                                 ),
                               ),
-                              state.isConnected ? MyPopUp() : Container()
+                              state.isConnected
+                                  ? MyPopUp(
+                                      typeOfBall: typesOfBalls,
+                                      m1inc: 'l',
+                                      m2inc: 'm',
+                                      m2dec: 'n',
+                                      m1dec: 'o',
+                                      reset: 'r',
+                                      //intArgument: onsec(),
+                                    )
+                                  : Container()
                             ],
                           ),
                           SizedBox(
@@ -197,7 +232,7 @@ class _MainPage extends State<MainPage> {
                                                   .add(
                                                       ConnectToDeviceAndStartListening(
                                                           result.device));
-                                          typesOfBalls[0][2] = true;
+                                          //typesOfBalls[0][2] = true;
                                         }),
                                   );
                                 },
@@ -241,6 +276,31 @@ class _MainPage extends State<MainPage> {
                       const SizedBox(
                         height: 20,
                       ),
+                      state.isConnected
+                          ? Container(
+                              child: StreamBuilder(
+                                  stream: context
+                                      .read<MotorControllerBloc>()
+                                      .dataStream,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      log('snaphasdata');
+                                      return Text(
+                                        snapshot.data!,
+                                        style:
+                                            GoogleFonts.bebasNeue(fontSize: 15),
+                                      );
+                                    } else if (snapshot.hasError) {
+                                      log('error in snapshot ${snapshot.error}');
+                                      return Text(snapshot.error.toString());
+                                    } else {
+                                      return const Text('ball speed');
+                                    }
+                                  }))
+                          : SizedBox(),
+                      const SizedBox(
+                        height: 20,
+                      ),
                       state.isDiscovering
                           ? const SizedBox()
                           : Expanded(
@@ -258,6 +318,7 @@ class _MainPage extends State<MainPage> {
                                             childAspectRatio: 1 / 1.3),
                                     itemBuilder: (context, index) {
                                       return BallBox(
+                                        ballnum: state.isConnected ? index : -1,
                                         onChanged: (value) {
                                           if (value && state.isConnected) {
                                             log('coming in side');
@@ -285,7 +346,7 @@ class _MainPage extends State<MainPage> {
                                       style:
                                           GoogleFonts.bebasNeue(fontSize: 25),
                                     ),
-                                  )
+                                  ),
                                 ],
                               ),
                             ),

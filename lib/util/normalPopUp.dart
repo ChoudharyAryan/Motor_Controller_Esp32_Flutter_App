@@ -8,82 +8,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 
-class MyPopUp extends StatelessWidget {
+class NormalPopUp extends StatelessWidget {
   // final int intArgument;
   final List typeOfBall;
-  final String m1inc;
-  final String m2inc;
-  final String m1dec;
-  final String m2dec;
+  final String inc;
+  final String dec;
   final String reset;
-  MyPopUp(
+  NormalPopUp(
       {required this.typeOfBall,
-      required this.m1inc,
-      required this.m2inc,
-      required this.m1dec,
-      required this.m2dec,
+      required this.inc,
+      required this.dec,
       required this.reset});
-
-  // motor1up() {
-  //   String ans = '';
-  //   for (int i = 0; i < 5; i++) {
-  //     if (i == intArgument) {
-  //       ans = i.toString();
-  //     }
-  //   }
-  //   return ans;
-  // }
-
-  // motor2up() {
-  //   String ans = '';
-  //   for (int i = 0; i < 5; i++) {
-  //     if (i == intArgument) {
-  //       i += 4;
-  //       ans = i.toString();
-  //     }
-  //   }
-  //   return ans;
-  // }
-
-  // motor1down() {
-  //   String ans = '';
-  //   for (int i = 0; i < 5; i++) {
-  //     if (i == intArgument) {
-  //       if (i == 0) {
-  //         ans = 'A';
-  //       } else if (i == 1) {
-  //         ans = 'B';
-  //       } else if (i == 2) {
-  //         ans = 'C';
-  //       } else if (i == 3) {
-  //         ans = 'D';
-  //       } else {
-  //         ans = 'E';
-  //       }
-  //     }
-  //   }
-  //   return ans;
-  // }
-
-  // motor2down() {
-  //   String ans = '';
-  //   for (int i = 0; i < 5; i++) {
-  //     if (i == intArgument) {
-  //       if (i == 0) {
-  //         ans = 'F';
-  //       } else if (i == 1) {
-  //         ans = 'G';
-  //       } else if (i == 2) {
-  //         ans = 'H';
-  //       } else if (i == 3) {
-  //         ans = 'I';
-  //       } else {
-  //         ans = 'J';
-  //       }
-  //     }
-  //   }
-  //   return ans;
-  // }
 
   String selectedValue = 'Select an option';
   Future<void> _showWarningDialog(BuildContext context, String reset) async {
@@ -112,12 +47,12 @@ class MyPopUp extends StatelessWidget {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                 onPressed: () =>
-                    context.read<MotorControllerBloc>().add(SendMessage(m1inc)),
+                    context.read<MotorControllerBloc>().add(SendMessage(inc)),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Motor1',
+                      'increase',
                       style: TextStyle(color: Colors.white),
                     ),
                     Icon(
@@ -132,56 +67,16 @@ class MyPopUp extends StatelessWidget {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                 onPressed: () =>
-                    context.read<MotorControllerBloc>().add(SendMessage(m2inc)),
+                    context.read<MotorControllerBloc>().add(SendMessage(dec)),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Motor2',
+                      'decrease',
                       style: TextStyle(color: Colors.white),
                     ),
                     Icon(
                       Icons.arrow_upward_rounded,
-                      color: Colors.white,
-                    )
-                  ],
-                ),
-              ),
-            ),
-            PopupMenuItem(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                onPressed: () =>
-                    context.read<MotorControllerBloc>().add(SendMessage(m1dec)),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Motor1',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Icon(
-                      Icons.arrow_downward_rounded,
-                      color: Colors.white,
-                    )
-                  ],
-                ),
-              ),
-            ),
-            PopupMenuItem(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-                onPressed: () =>
-                    context.read<MotorControllerBloc>().add(SendMessage(m2dec)),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Motor2',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Icon(
-                      Icons.arrow_downward_rounded,
                       color: Colors.white,
                     )
                   ],
@@ -199,7 +94,7 @@ class MyPopUp extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'restart',
+                      'reset',
                       style: TextStyle(color: Colors.white),
                     ),
                     Icon(
