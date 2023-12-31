@@ -6,6 +6,7 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart' show Location;
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -21,7 +22,60 @@ class MotorControllerBloc
     return _dataController!.stream;
   }
 
+  late bool _serviceEnabled;
+
+  Location location = new Location();
   BluetoothState _bluetoothState = BluetoothState.UNKNOWN;
+  Future<void> needPermission() async {
+    // Map<Permission, PermissionStatus> statuses = await [
+    //   Permission.bluetooth,
+    //   Permission.bluetoothScan,
+    //   Permission.bluetoothConnect,
+    //   Permission.location,
+    //   // Add location permission if needed
+    //   // ... add other permissions as needed
+    // ].request();
+
+    await Permission.bluetooth.request();
+    await Permission.bluetoothConnect.request();
+    await Permission.bluetoothScan.request();
+    await Permission.location.request();
+
+    log('returining');
+    // if (Permission.bluetooth.isGranted == true &&
+    //     Permission.bluetoothConnect.isGranted == true &&
+    //     Permission.bluetoothScan.isGranted == true &&
+    //     Permission.location.isGranted == true) {
+    //   log('permissions granted');
+    //   return;
+    // } else {
+    //   log('did not get all the permission');
+    // }
+    if (await Permission.bluetooth.isGranted == true) {
+      log('Bluetooth permission granted');
+    }
+    if (await Permission.bluetoothConnect.isGranted == true) {
+      log('BluetoothConnect permission granted');
+    }
+    if (await Permission.bluetoothScan.isGranted == true) {
+      log('BLuetoothScan permnisson granted');
+    }
+    if (await Permission.location.isGranted == true) {
+      log('Bluetooth Location permission granted');
+    }
+
+    // if (statuses[Permission.bluetooth] != PermissionStatus.granted ||
+    //     statuses[Permission.bluetoothScan] != PermissionStatus.granted ||
+    //     statuses[Permission.bluetoothConnect] != PermissionStatus.granted ||
+    //     statuses[Permission.location] != PermissionStatus.granted) {
+    //   throw Exception('Bluetooth permission denied');
+    // } else {
+    //   log('returning from function needPermission all permissions granted');
+    //   return;
+    // }
+
+    // Add other permission checks and error handling as needed
+  }
 
   String _messageBuffer = '';
   StreamSubscription? streamSubscriptiondata;
@@ -49,65 +103,82 @@ class MotorControllerBloc
     if (DateTime.now().difference(_lastDiscoveryTime).inSeconds < 3) {
       return;
     }
-    if (!_bluetoothState.isEnabled) {
-      await FlutterBluetoothSerial.instance.requestEnable();
-      // .then((_) => emit(const MotorControllerInitial(
-      //       isDiscovering: false,
-      //       isConnecting: false,
-
-      //     )));
+    _bluetoothState = await FlutterBluetoothSerial.instance.state;
+    log(_bluetoothState.toString());
+    final bluetoothEnabled = await FlutterBluetoothSerial.instance.isEnabled;
+    if (bluetoothEnabled != null && !bluetoothEnabled) {
+      log('am i even asking for permission');
+      await FlutterBluetoothSerial.instance.openSettings();
     }
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.bluetooth,
-      Permission.bluetoothConnect,
-      // Permission.bluetoothScan,
-      // Permission.location
-    ].request();
+    await needPermission();
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      // Request to enable location services
+      _serviceEnabled = await location.requestService();
+    }
+    log('in the start discovery function again');
+    // if (!_bluetoothState.isEnabled) {
+    //   await FlutterBluetoothSerial.instance.requestEnable();
+    //   // .then((_) => emit(const MotorControllerInitial(
+
+    //   //       isDiscovering: false,
+    //   //       isConnecting: false,
+
+    //   //     )));
+    // }
+    // Map<Permission, PermissionStatus> statuses = await [
+    //   Permission.bluetooth,
+    //   Permission.bluetoothConnect,
+    //   // Permission.bluetoothScan,
+    //   Permission.location
+    // ].request();
     event.results.clear();
     _lastDiscoveryTime = DateTime.now();
     log('inside the _startDiscovery function');
 
-    if (statuses[Permission.bluetooth] == PermissionStatus.granted &&
-        // statuses[Permission.bluetoothScan] == PermissionStatus.granted &&
-        statuses[Permission.bluetoothConnect] == PermissionStatus.granted) {
-      emit(const MotorControllerDiscovering(
-          isDiscoverd: false,
-          isDiscovering: true,
-          isloading: false,
-          isConnecting: false,
-          results: [],
-          exception: null));
+    // if (statuses[Permission.bluetooth] == PermissionStatus.granted &&
+    //     statuses[Permission.location] == PermissionStatus.granted &&
+    //     // statuses[Permission.bluetoothScan] == PermissionStatus.granted &&
+    //     statuses[Permission.bluetoothConnect] == PermissionStatus.granted) {
+    emit(const MotorControllerDiscovering(
+        isDiscoverd: false,
+        isDiscovering: true,
+        isloading: false,
+        isConnecting: false,
+        results: [],
+        exception: null));
 
-      try {
-        log('Inside the (try catch block of _startDiscovery');
-        await for (BluetoothDiscoveryResult r in FlutterBluetoothSerial.instance
-            .startDiscovery()
-            .where((r) => r.device.name?.startsWith('ESP32') ?? false)) {
-          log('adding the discovey result to the list');
-          event.results.add(r);
-          emit(MotorControllerDiscovering(
-              isDiscovering: true,
-              isDiscoverd: false,
-              isloading: false,
-              isConnecting: false,
-              results: event.results,
-              exception: null));
-          log('discovery result is ${r.device.name}');
-        }
-      } on Exception catch (e) {
-        log('There is an exception inside the _startDiscovery function');
-        emit(MotorControllerException(
-            exception: e,
-            isConnected: false,
+    try {
+      log('Inside the (try catch block of _startDiscovery');
+      await for (BluetoothDiscoveryResult r in FlutterBluetoothSerial.instance
+          .startDiscovery()
+          .where((r) => r.device.name?.startsWith('ESP32') ?? false)) {
+        log(r.device.name.toString());
+        log('adding the discovey result to the list');
+        event.results.add(r);
+        emit(MotorControllerDiscovering(
+            isDiscovering: true,
+            isDiscoverd: false,
+            isloading: false,
             isConnecting: false,
-            isDiscovering: false));
+            results: event.results,
+            exception: null));
+        log('discovery result is ${r.device.name}');
       }
-    } else {
-      emit(const MotorControllerInitial(
-          isDiscovering: false,
+    } on Exception catch (e) {
+      log('There is an exception inside the _startDiscovery function');
+      emit(MotorControllerException(
+          exception: e,
+          isConnected: false,
           isConnecting: false,
-          string: 'bluetooth permission denied'));
+          isDiscovering: false));
     }
+    // } else {
+    //   emit(const MotorControllerInitial(
+    //       isDiscovering: false,
+    //       isConnecting: false,
+    //       string: 'bluetooth permission denied'));
+    // }
 
     if (event.results.isEmpty) {
       log('results list is empty');
@@ -131,6 +202,8 @@ class MotorControllerBloc
     if (!_bluetoothState.isEnabled) {
       await FlutterBluetoothSerial.instance.requestEnable();
     }
+    await Permission.bluetooth.request();
+    await Permission.bluetoothConnect.request();
     PermissionStatus bluetoothStatus = await Permission.bluetooth.status;
     if (bluetoothStatus == PermissionStatus.granted) {
       emit(const MotorControllerConnecting(
