@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 Future<void> ShowMyDilog(BuildContext context, String content) async {
   return showDialog<void>(
@@ -10,11 +11,11 @@ Future<void> ShowMyDilog(BuildContext context, String content) async {
     barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('error occured'),
-        content: Text('$content'),
+        title: Text(AppLocalizations.of(context)!.error),
+        content: Text(content),
         actions: <Widget>[
           TextButton(
-            child: const Text('close'),
+            child: Text(AppLocalizations.of(context)!.close),
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -63,12 +64,12 @@ Future<String?> getNameDilog(
               border: const OutlineInputBorder(
                   borderSide: BorderSide(),
                   borderRadius: BorderRadius.all(Radius.circular(20))),
-              labelText: 'enter your name',
+              labelText: AppLocalizations.of(context)!.eyn,
               labelStyle: GoogleFonts.bebasNeue(fontSize: 20)),
         ),
         actions: [
           TextButton(
-            child: const Text('done'),
+            child: Text(AppLocalizations.of(context)!.done),
             onPressed: () {
               Navigator.of(context).pop(_texteditingcontroller.text);
             },
@@ -85,12 +86,11 @@ Future<int?> ShowMyWarning(BuildContext context) async {
     barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: const Text('warning'),
-        content: const Text(
-            'you are restarting The Bowler you will be disconnected and have reconnect to the device '),
+        title: Text(AppLocalizations.of(context)!.warning),
+        content: Text(AppLocalizations.of(context)!.restartwarning),
         actions: <Widget>[
           TextButton(
-            child: const Text('confirm'),
+            child: Text(AppLocalizations.of(context)!.confirm),
             onPressed: () {
               Navigator.of(context).pop(1);
             },

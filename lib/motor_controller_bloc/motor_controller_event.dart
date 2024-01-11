@@ -7,7 +7,8 @@ abstract class MotorControllerEvent {
 
 class StartDiscovery extends MotorControllerEvent {
   final List<BluetoothDiscoveryResult> results;
-  const StartDiscovery(this.results);
+  final BuildContext context;
+  const StartDiscovery(this.results, this.context);
 }
 
 class ConnectToDeviceAndStartListening extends MotorControllerEvent {

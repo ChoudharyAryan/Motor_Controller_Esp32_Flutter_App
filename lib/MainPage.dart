@@ -8,6 +8,7 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:motor_controller_esp32/main.dart';
 import 'package:motor_controller_esp32/util/BluetoothDeviceListEntry.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 import 'package:motor_controller_esp32/util/ball_box.dart';
@@ -16,6 +17,7 @@ import 'package:motor_controller_esp32/util/myPopUp.dart';
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -95,8 +97,7 @@ class _MainPage extends State<MainPage> {
         listener: (context, state) {
           if (state is MotorControllerException) {
             if (state.exception is PlatformException) {
-              ShowMyDilog(context,
-                  'platform interaction failed: check your bluetooth connection');
+              ShowMyDilog(context, AppLocalizations.of(context)!.plf);
               context.read<MotorControllerBloc>().add(const EmitInitial());
             } else {
               ShowMyDilog(context, state.exception.toString());
@@ -122,7 +123,7 @@ class _MainPage extends State<MainPage> {
                         onPressed: () {
                           context
                               .read<MotorControllerBloc>()
-                              .add(StartDiscovery(results));
+                              .add(StartDiscovery(results, context));
                         },
                         child: const Icon(
                           Icons.bluetooth_audio_rounded,
@@ -154,13 +155,17 @@ class _MainPage extends State<MainPage> {
                         children: [
                           Row(
                             children: [
-                              const Padding(
-                                padding: EdgeInsets.only(top: 9),
-                                child: Text(
-                                  'Hi,',
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                              ),
+                              Padding(
+                                  padding: const EdgeInsets.only(top: 9),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.hi,
+                                    style: const TextStyle(fontSize: 20),
+                                  )
+                                  // Text(
+                                  //   'Hi,',
+                                  //   style: TextStyle(fontSize: 20),
+                                  // ),
+                                  ),
                               InkWell(
                                 onLongPress: () {
                                   getNameDilog(context, username)
@@ -185,9 +190,23 @@ class _MainPage extends State<MainPage> {
                                       reset: 'r',
                                       //intArgument: onsec(),
                                     )
-                                  : Container()
+                                  : Container(),
+                              TextButton(
+                                  onPressed: () {
+                                    MotorControllerEsp32 motorController =
+                                        MotorControllerEsp32();
+                                    motorController.setLang(context);
+                                  },
+                                  child:
+                                      const FaIcon(FontAwesomeIcons.language))
                             ],
                           ),
+                          // TextButton(
+                          //     onPressed: () {
+                          //       log('lang is changed');
+                          //       _changeLanguage(context, 'hi', 'IN');
+                          //     },
+                          //     child: const Text('Lang')),
                           SizedBox(
                             child: state.isConnected
                                 ? const Icon(
@@ -294,10 +313,11 @@ class _MainPage extends State<MainPage> {
                                       log('error in snapshot ${snapshot.error}');
                                       return Text(snapshot.error.toString());
                                     } else {
-                                      return const Text('ball speed');
+                                      return Text(AppLocalizations.of(context)!
+                                          .ballspeed);
                                     }
                                   }))
-                          : SizedBox(),
+                          : const SizedBox(),
                       const SizedBox(
                         height: 20,
                       ),
@@ -318,6 +338,7 @@ class _MainPage extends State<MainPage> {
                                             childAspectRatio: 1 / 1.3),
                                     itemBuilder: (context, index) {
                                       return BallBox(
+                                        context: context,
                                         ballnum: state.isConnected ? index : -1,
                                         onChanged: (value) {
                                           if (value && state.isConnected) {
@@ -333,7 +354,7 @@ class _MainPage extends State<MainPage> {
                                                   value, index)
                                               : null;
                                         },
-                                        ballType: typesOfBalls[index][0],
+                                        ballType: ballname(index),
                                         iconPath: typesOfBalls[index][1],
                                         powerOn: typesOfBalls[index][2],
                                       );
@@ -341,7 +362,7 @@ class _MainPage extends State<MainPage> {
                                   ),
                                   Center(
                                     child: Text(
-                                      'TheBowler',
+                                      AppLocalizations.of(context)!.thebowler,
                                       textAlign: TextAlign.center,
                                       style:
                                           GoogleFonts.bebasNeue(fontSize: 25),
@@ -358,4 +379,23 @@ class _MainPage extends State<MainPage> {
       ),
     );
   }
+
+  String ballname(int index) {
+    if (index == 0) {
+      return AppLocalizations.of(context)!.normal;
+    } else if (index == 1) {
+      return AppLocalizations.of(context)!.normalfast;
+    } else if (index == 2) {
+      return AppLocalizations.of(context)!.normalslow;
+    } else if (index == 3) {
+      return AppLocalizations.of(context)!.rightswing;
+    }
+    return AppLocalizations.of(context)!.leftswing;
+  }
+
+  // void _changeLanguage(
+  //     BuildContext context, String languageCode, String countryCode) {
+  //   Locale newLocale = Locale(languageCode, countryCode);
+  //   MotorControllerEsp32.setLocale(context, newLocale);
+  // }
 }

@@ -48,6 +48,9 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   permission_handler: ^11.1.0
   location: ^5.0.3
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +72,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   assets:

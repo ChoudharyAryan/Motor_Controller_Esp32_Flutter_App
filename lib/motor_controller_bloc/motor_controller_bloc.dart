@@ -10,6 +10,7 @@ import 'package:location/location.dart' show Location;
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 part 'motor_controller_event.dart';
 part 'motor_controller_state.dart';
 
@@ -182,10 +183,10 @@ class MotorControllerBloc
 
     if (event.results.isEmpty) {
       log('results list is empty');
-      emit(const MotorControllerInitial(
+      emit(MotorControllerInitial(
           isDiscovering: false,
           isConnecting: false,
-          string: 'no device found'));
+          string: AppLocalizations.of(event.context)!.dnf));
     }
 
     // emit(MotorControllerDiscovering(

@@ -1,0 +1,90 @@
+{
+
+    "language": "English",
+    "@language": {
+        "description": "The current Language"
+    },
+    "hi": "Hi,",
+    "@hi":{
+        "description": "A Programmer Gretting"
+    },
+    "normal": "Normal",
+    "@multiLanguage":{
+        "description": "Type of Ball"
+    },   
+    "normalfast": "Normal Fast",
+    "@normalfast":{
+        "description": "Type of Ball"
+    },   
+    "normalslow": "Normal Slow",
+    "@normalslow":{
+        "description": "Type of Ball"
+    },   
+    "rightswing": "Right Swing",
+    "@rightswing":{
+        "description": "Type of Ball"
+    },   
+    "leftswing": "Left Swing",
+    "@leftswing":{
+        "description": "Type of Ball"
+    },
+    "motor1": "Motor1",
+    "@motor1":{
+        "description": "motor control"
+    },
+    "motor2": "Motor2",
+    "@motor2":{
+        "description": "motor control"
+    },
+    
+    "restart": "restart",
+    "@restart":{
+        "description": "restart the Bowler"
+    },
+    "dnf": "device not found",
+    "@dnf":{
+        "description": "error message"
+    },
+    "done": "done",
+    "@done":{
+        "description": "done"
+    },
+    "eyn": "Enter Your Name",
+    "@eyn":{
+        "description": "your name"
+    },
+    "error": "error occured",
+    "@error":{
+        "description": "error message"
+    },
+    "ballspeed": "Ball Speed",
+    "@ballspeed":{
+        "description": "incoming data"
+    },
+    "thebowler": "THEBOWLER",
+    "@thebowler":{
+        "description": "app name"
+    },
+    "close": "close",
+    "@close": {
+        "description": "function"
+    },
+    "plf": "platform interaction failed: check your bluetooth connection",
+    "@plf":{
+        "description": "platform exception"
+    },
+    "warning": "Warning",
+    "@warning":{
+        "description": "warning"
+    },
+    "confirm": "confirm",
+    "@confirm": {
+        "description": "confirm"
+    },
+    "restartwarning": "you are restarting The Bowler you will be disconnected and have reconnect to the device ",
+    "@restartwarning":{
+        "description": "the bowler restart warning"
+    }
+    
+    
+}

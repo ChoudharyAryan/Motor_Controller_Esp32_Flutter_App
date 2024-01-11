@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MyPopUp extends StatelessWidget {
   // final int intArgument;
@@ -113,14 +114,14 @@ class MyPopUp extends StatelessWidget {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                 onPressed: () =>
                     context.read<MotorControllerBloc>().add(SendMessage(m1inc)),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Motor1',
-                      style: TextStyle(color: Colors.white),
+                      AppLocalizations.of(context)!.motor1,
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    Icon(
+                    const Icon(
                       Icons.arrow_upward_rounded,
                       color: Colors.white,
                     )
@@ -133,14 +134,14 @@ class MyPopUp extends StatelessWidget {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                 onPressed: () =>
                     context.read<MotorControllerBloc>().add(SendMessage(m2inc)),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Motor2',
-                      style: TextStyle(color: Colors.white),
+                      AppLocalizations.of(context)!.motor2,
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    Icon(
+                    const Icon(
                       Icons.arrow_upward_rounded,
                       color: Colors.white,
                     )
@@ -153,14 +154,14 @@ class MyPopUp extends StatelessWidget {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                 onPressed: () =>
                     context.read<MotorControllerBloc>().add(SendMessage(m1dec)),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Motor1',
-                      style: TextStyle(color: Colors.white),
+                      AppLocalizations.of(context)!.motor1,
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    Icon(
+                    const Icon(
                       Icons.arrow_downward_rounded,
                       color: Colors.white,
                     )
@@ -173,14 +174,14 @@ class MyPopUp extends StatelessWidget {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
                 onPressed: () =>
                     context.read<MotorControllerBloc>().add(SendMessage(m2dec)),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Motor2',
-                      style: TextStyle(color: Colors.white),
+                      AppLocalizations.of(context)!.motor2,
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    Icon(
+                    const Icon(
                       Icons.arrow_downward_rounded,
                       color: Colors.white,
                     )
@@ -195,14 +196,14 @@ class MyPopUp extends StatelessWidget {
                 onPressed: () async {
                   _showWarningDialog(context, reset);
                 },
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'restart',
-                      style: TextStyle(color: Colors.white),
+                      AppLocalizations.of(context)!.restart,
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    Icon(
+                    const Icon(
                       Icons.restart_alt_rounded,
                       color: Colors.white,
                     )

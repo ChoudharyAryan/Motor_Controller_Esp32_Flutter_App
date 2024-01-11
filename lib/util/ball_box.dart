@@ -10,10 +10,12 @@ class BallBox extends StatelessWidget {
   final String iconPath;
   final bool powerOn;
   final onChanged;
+  final BuildContext context;
   final ballnum;
   BallBox(
       {super.key,
       required this.ballType,
+      required this.context,
       required this.onChanged,
       required this.iconPath,
       required this.powerOn,
@@ -57,15 +59,19 @@ class BallBox extends StatelessWidget {
         reset: 'u');
   }
 
-  MyPopUp leftswpopup() {
+  void leftswpopup(BuildContext context) {
     print('inside the leftswpopup function');
-    return MyPopUp(
-        typeOfBall: const [],
-        m1inc: 'v',
-        m2inc: 'w',
-        m1dec: 'x',
-        m2dec: 'y',
-        reset: 'z');
+    // showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return MyPopUp(
+    //           typeOfBall: const [],
+    //           m1inc: 'v',
+    //           m2inc: 'w',
+    //           m1dec: 'x',
+    //           m2dec: 'y',
+    //           reset: 'z');
+    //     });
   }
 
   @override
@@ -81,7 +87,7 @@ class BallBox extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             GestureDetector(
-              onLongPress: () {
+              onTap: () {
                 print('called the long press button');
                 if (ballnum == 0) {
                   print('ball num is 0');
@@ -94,7 +100,7 @@ class BallBox extends StatelessWidget {
                   rightswpopup();
                 } else if (ballnum == 4) {
                   print('inside the leftswing ball');
-                  leftswpopup();
+                  leftswpopup(context);
                 } else {
                   print('simr problem');
                   null;
@@ -122,8 +128,11 @@ class BallBox extends StatelessWidget {
                 )),
                 Transform.rotate(
                     angle: pi / 2,
-                    child:
-                        CupertinoSwitch(value: powerOn, onChanged: onChanged))
+                    child: CupertinoSwitch(
+                        value: powerOn,
+                        onChanged: onChanged != null
+                            ? (value) => onChanged(value)
+                            : null))
               ],
             )
           ],
