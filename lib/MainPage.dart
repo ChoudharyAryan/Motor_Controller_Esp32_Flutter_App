@@ -194,7 +194,7 @@ class _MainPage extends State<MainPage> {
                               TextButton(
                                   onPressed: () {
                                     MotorControllerEsp32 motorController =
-                                        MotorControllerEsp32();
+                                        const MotorControllerEsp32();
                                     motorController.setLang(context);
                                   },
                                   child:
