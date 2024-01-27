@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "69199111588",
+    "project_id": "the-bowler-328c7",
+    "storage_bucket": "the-bowler-328c7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69199111588:android:e4a86b9222ffab5304cd31",
+        "android_client_info": {
+          "package_name": "com.example.motor_controller_esp32"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHM8OXvsybZIOTkheHXztFSbqXqHQCVlY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

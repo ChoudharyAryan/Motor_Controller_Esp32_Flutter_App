@@ -1,6 +1,9 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:motor_controller_esp32/Intro_Screens/intro_screens.dart';
+import 'package:motor_controller_esp32/firebase_options.dart';
 import 'package:motor_controller_esp32/l10n/l10n.dart';
+import 'package:motor_controller_esp32/services/auth/views/login_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -8,7 +11,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import './MainPage.dart';
 
-void main() => runApp(const MotorControllerEsp32());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const MotorControllerEsp32());
+}
 
 class MotorControllerEsp32 extends StatefulWidget {
   const MotorControllerEsp32({super.key});
@@ -69,7 +76,9 @@ class _MotorControllerEsp32State extends State<MotorControllerEsp32> {
         ],
         supportedLocales: L10n.all,
         debugShowCheckedModeBanner: false,
-        home: introDone ? MainPage() : const IntroScreens());
+        home: LoginView()
+        // introDone ? MainPage() : const IntroScreens()
+        );
   }
 
   Future<void> setLang() async {
