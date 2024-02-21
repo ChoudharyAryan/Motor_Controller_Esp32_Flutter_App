@@ -4,7 +4,9 @@ part of 'auth_bloc_bloc.dart';
 abstract class AuthState {
   final bool isLoading;
   final String? loadingText;
+  final Exception? exception;
   const AuthState({
+    this.exception,
     required this.isLoading,
     this.loadingText = 'Please wait a moment',
   });

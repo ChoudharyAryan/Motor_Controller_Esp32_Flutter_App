@@ -1,9 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:motor_controller_esp32/Intro_Screens/intro_screens.dart';
 import 'package:motor_controller_esp32/firebase_options.dart';
 import 'package:motor_controller_esp32/l10n/l10n.dart';
-import 'package:motor_controller_esp32/services/auth/views/login_view.dart';
+import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
+import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
+import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -76,8 +79,20 @@ class _MotorControllerEsp32State extends State<MotorControllerEsp32> {
         ],
         supportedLocales: L10n.all,
         debugShowCheckedModeBanner: false,
-        home: LoginView()
-        // introDone ? MainPage() : const IntroScreens()
+        home: BlocProvider<AuthBloc>(
+          create: ((context) => AuthBloc(FirebaseAuthProvider())
+            ..add(const AuthEventInitialize())),
+          child: introDone
+              ? BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+                  if (state is AuthStateLoggedIn) {
+                    return MainPage();
+                  } else {
+                    return const AuthView();
+                  }
+                })
+              : const IntroScreens(),
+        )
+        //
         );
   }
 

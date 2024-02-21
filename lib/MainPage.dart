@@ -9,6 +9,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:motor_controller_esp32/main.dart';
+import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
+import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
+import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
 import 'package:motor_controller_esp32/util/BluetoothDeviceListEntry.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 import 'package:motor_controller_esp32/util/ball_box.dart';
@@ -91,291 +94,337 @@ class _MainPage extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => MotorControllerBloc(),
-      child: BlocListener<MotorControllerBloc, MotorControllerState>(
-        listener: (context, state) {
-          if (state is MotorControllerException) {
-            if (state.exception is PlatformException) {
-              ShowMyDilog(context, AppLocalizations.of(context)!.plf);
-              context.read<MotorControllerBloc>().add(const EmitInitial());
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => MotorControllerBloc(),
+        ),
+        BlocProvider(
+          create: (context) => AuthBloc(FirebaseAuthProvider()),
+        ),
+      ],
+      child: Column(
+        children: [
+          BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
+            if (state is AuthStateLoggedOut) {
+              return const AuthView();
             } else {
-              ShowMyDilog(context, state.exception.toString());
-              context.read<MotorControllerBloc>().add(const EmitInitial());
+              return MainPage();
             }
-          } else if (state.string != null) {
-            ShowErrorSnackBar(context, state.string!);
-          }
-          if (state is MotorControllerDiscovering) {
-            //setState(() {});
+          }),
+          BlocListener<MotorControllerBloc, MotorControllerState>(
+            listener: (context, state) {
+              if (state is MotorControllerException) {
+                if (state.exception is PlatformException) {
+                  ShowMyDilog(context, AppLocalizations.of(context)!.plf);
+                  context.read<MotorControllerBloc>().add(const EmitInitial());
+                } else {
+                  ShowMyDilog(context, state.exception.toString());
+                  context.read<MotorControllerBloc>().add(const EmitInitial());
+                }
+              } else if (state.string != null) {
+                ShowErrorSnackBar(context, state.string!);
+              }
+              if (state is MotorControllerDiscovering) {
+                //setState(() {});
 
-            _startTimer();
-          }
-        },
-        child: BlocBuilder<MotorControllerBloc, MotorControllerState>(
-          builder: (context, state) {
-            return Scaffold(
-                floatingActionButton: !state.isDiscovering &&
-                        !state.isConnecting &&
-                        !state.isConnected
-                    ? FloatingActionButton(
-                        backgroundColor: Colors.grey[400],
-                        onPressed: () {
-                          context
-                              .read<MotorControllerBloc>()
-                              .add(StartDiscovery(results, context));
-                        },
-                        child: const Icon(
-                          Icons.bluetooth_audio_rounded,
-                          size: 35,
-                          color: Colors.black,
-                        ))
-                    : state.isConnected
+                _startTimer();
+              }
+            },
+            child: BlocBuilder<MotorControllerBloc, MotorControllerState>(
+              builder: (context, state) {
+                return Scaffold(
+                    floatingActionButton: !state.isDiscovering &&
+                            !state.isConnecting &&
+                            !state.isConnected
                         ? FloatingActionButton(
                             backgroundColor: Colors.grey[400],
-                            onPressed: () => state.isDisconnected
-                                ? null
-                                : context.read<MotorControllerBloc>().add(
-                                    Disconnect(
-                                        results: results, list: typesOfBalls)),
+                            onPressed: () {
+                              context
+                                  .read<MotorControllerBloc>()
+                                  .add(StartDiscovery(results, context));
+                            },
                             child: const Icon(
-                              Icons.bluetooth_disabled_rounded,
-                              color: Colors.black,
+                              Icons.bluetooth_audio_rounded,
                               size: 35,
+                              color: Colors.black,
                             ))
-                        : null,
-                backgroundColor: const Color.fromRGBO(224, 224, 224, 1),
-                body: SafeArea(
-                    child: Padding(
-                  padding: const EdgeInsets.only(right: 8, left: 8),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        : state.isConnected
+                            ? FloatingActionButton(
+                                backgroundColor: Colors.grey[400],
+                                onPressed: () => state.isDisconnected
+                                    ? null
+                                    : context.read<MotorControllerBloc>().add(
+                                        Disconnect(
+                                            results: results,
+                                            list: typesOfBalls)),
+                                child: const Icon(
+                                  Icons.bluetooth_disabled_rounded,
+                                  color: Colors.black,
+                                  size: 35,
+                                ))
+                            : null,
+                    backgroundColor: const Color.fromRGBO(224, 224, 224, 1),
+                    body: SafeArea(
+                        child: Padding(
+                      padding: const EdgeInsets.only(right: 8, left: 8),
+                      child: Column(
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Padding(
-                                  padding: const EdgeInsets.only(top: 9),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.hi,
-                                    style: const TextStyle(fontSize: 20),
-                                  )
-                                  // Text(
-                                  //   'Hi,',
-                                  //   style: TextStyle(fontSize: 20),
-                                  // ),
-                                  ),
-                              InkWell(
-                                onLongPress: () {
-                                  getNameDilog(context, username)
-                                      .then((value) async {
-                                    if (value != null && value.isNotEmpty) {
-                                      await _updateUsername(value);
-                                    }
-                                  });
-                                },
-                                child: Text(
-                                  username,
-                                  style: GoogleFonts.bebasNeue(fontSize: 35),
-                                ),
-                              ),
-                              state.isConnected
-                                  ? MyPopUp(
-                                      typeOfBall: typesOfBalls,
-                                      m1inc: 'l',
-                                      m2inc: 'm',
-                                      m2dec: 'n',
-                                      m1dec: 'o',
-                                      reset: 'r',
-                                      //intArgument: onsec(),
-                                    )
-                                  : Container(),
-                              TextButton(
-                                  onPressed: () {
-                                    MotorControllerEsp32 motorController =
-                                        const MotorControllerEsp32();
-                                    motorController.setLang(context);
-                                  },
-                                  child:
-                                      const FaIcon(FontAwesomeIcons.language))
-                            ],
-                          ),
-                          // TextButton(
-                          //     onPressed: () {
-                          //       log('lang is changed');
-                          //       _changeLanguage(context, 'hi', 'IN');
-                          //     },
-                          //     child: const Text('Lang')),
-                          SizedBox(
-                            child: state.isConnected
-                                ? const Icon(
-                                    Icons.bluetooth_connected_rounded,
-                                    size: 35,
-                                    color: Colors.black,
-                                  )
-                                : state.isDiscovering
-                                    ? LoadingAnimationWidget.beat(
-                                        color: Colors.grey, size: 30)
-                                    : state.isConnecting
-                                        ? LoadingAnimationWidget.discreteCircle(
-                                            color: Colors.grey, size: 30)
-                                        : const Icon(
-                                            Icons.bluetooth_disabled_rounded,
-                                            size: 35,
-                                            color: Colors.black,
-                                          ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      state.isDiscovering
-                          ? Expanded(
-                              child: ListView.builder(
-                                itemCount: results.length,
-                                itemBuilder: (BuildContext context, index) {
-                                  BluetoothDiscoveryResult result =
-                                      results[index];
-                                  return Card(
-                                    color: Colors.grey[400],
-                                    child: BluetoothDeviceListEntry(
-                                        device: result.device,
-                                        rssi: result.rssi,
-                                        onTap: () {
-                                          state.isloading
-                                              ? null
-                                              : context
-                                                  .read<MotorControllerBloc>()
-                                                  .add(
-                                                      ConnectToDeviceAndStartListening(
-                                                          result.device));
-                                          //typesOfBalls[0][2] = true;
-                                        }),
-                                  );
-                                },
-                              ),
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                  color: state.isConnected
-                                      ? Colors.grey[200]
-                                      : Colors.black38,
-                                  borderRadius: BorderRadius.circular(30)),
-                              height: 60,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                              Row(
                                 children: [
-                                  Commbutton1(
-                                      const Icon(Icons.arrow_upward_rounded),
-                                      state.isConnected ? 'i' : null,
-                                      context,
-                                      state.isConnected
-                                          ? Colors.black
-                                          : Colors.white),
-                                  Commbutton1(
-                                      const FaIcon(FontAwesomeIcons.stop),
-                                      state.isConnected ? 'j' : null,
-                                      context,
-                                      state.isConnected
-                                          ? Colors.black
-                                          : Colors.white),
-                                  Commbutton1(
-                                      const Icon(Icons.arrow_downward_rounded),
-                                      state.isConnected ? 'k' : null,
-                                      context,
-                                      state.isConnected
-                                          ? Colors.black
-                                          : Colors.white)
+                                  Padding(
+                                      padding: const EdgeInsets.only(top: 9),
+                                      child: Text(
+                                        AppLocalizations.of(context)!.hi,
+                                        style: const TextStyle(fontSize: 20),
+                                      )
+                                      // Text(
+                                      //   'Hi,',
+                                      //   style: TextStyle(fontSize: 20),
+                                      // ),
+                                      ),
+                                  InkWell(
+                                    onLongPress: () {
+                                      getNameDilog(context, username)
+                                          .then((value) async {
+                                        if (value != null && value.isNotEmpty) {
+                                          await _updateUsername(value);
+                                        }
+                                      });
+                                    },
+                                    child: Text(
+                                      username,
+                                      style:
+                                          GoogleFonts.bebasNeue(fontSize: 35),
+                                    ),
+                                  ),
+                                  state.isConnected
+                                      ? MyPopUp(
+                                          typeOfBall: typesOfBalls,
+                                          m1inc: 'l',
+                                          m2inc: 'm',
+                                          m2dec: 'n',
+                                          m1dec: 'o',
+                                          reset: 'r',
+                                          //intArgument: onsec(),
+                                        )
+                                      : Container(),
+                                  TextButton(
+                                      onPressed: () {
+                                        MotorControllerEsp32 motorController =
+                                            const MotorControllerEsp32();
+                                        motorController.setLang(context);
+                                      },
+                                      child: const FaIcon(
+                                          FontAwesomeIcons.language))
                                 ],
                               ),
-                            ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      state.isConnected
-                          ? Container(
-                              child: StreamBuilder(
-                                  stream: context
-                                      .read<MotorControllerBloc>()
-                                      .dataStream,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData) {
-                                      log('snaphasdata');
-                                      return Text(
-                                        snapshot.data!,
-                                        style:
-                                            GoogleFonts.bebasNeue(fontSize: 15),
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      log('error in snapshot ${snapshot.error}');
-                                      return Text(snapshot.error.toString());
-                                    } else {
-                                      return Text(AppLocalizations.of(context)!
-                                          .ballspeed);
-                                    }
-                                  }))
-                          : const SizedBox(),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      state.isDiscovering
-                          ? const SizedBox()
-                          : Expanded(
-                              child: ListView(
+                              // TextButton(
+                              //     onPressed: () {
+                              //       log('lang is changed');
+                              //       _changeLanguage(context, 'hi', 'IN');
+                              //     },
+                              //     child: const Text('Lang')),
+                              Row(
                                 children: [
-                                  GridView.builder(
-                                    shrinkWrap: true,
-                                    physics: const ClampingScrollPhysics(),
-                                    itemCount: typesOfBalls.length,
-                                    padding: const EdgeInsets.all(20),
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 2,
-                                            crossAxisSpacing: 5,
-                                            childAspectRatio: 1 / 1.3),
-                                    itemBuilder: (context, index) {
-                                      return BallBox(
-                                        context: context,
-                                        ballnum: state.isConnected ? index : -1,
-                                        onChanged: (value) {
-                                          if (value && state.isConnected) {
-                                            log('coming in side');
-                                            context
-                                                .read<MotorControllerBloc>()
-                                                .add(SendMessage(
-                                                    typesOfBalls[index][3]));
-                                          }
-                                          log('$value');
-                                          state.isConnected && value
-                                              ? powerSwitchHadChanged(
-                                                  value, index)
-                                              : null;
-                                        },
-                                        ballType: ballname(index),
-                                        iconPath: typesOfBalls[index][1],
-                                        powerOn: typesOfBalls[index][2],
+                                  GestureDetector(
+                                      onTap: () {
+                                        context
+                                            .read<AuthBloc>()
+                                            .add(const AuthEventLogOut());
+                                      },
+                                      child: const Icon(
+                                        Icons.logout_rounded,
+                                        size: 35,
+                                        color: Colors.black,
+                                      )),
+                                  SizedBox(
+                                    child: state.isConnected
+                                        ? const Icon(
+                                            Icons.bluetooth_connected_rounded,
+                                            size: 35,
+                                            color: Colors.black,
+                                          )
+                                        : state.isDiscovering
+                                            ? LoadingAnimationWidget.beat(
+                                                color: Colors.grey, size: 30)
+                                            : state.isConnecting
+                                                ? LoadingAnimationWidget
+                                                    .discreteCircle(
+                                                        color: Colors.grey,
+                                                        size: 30)
+                                                : const Icon(
+                                                    Icons
+                                                        .bluetooth_disabled_rounded,
+                                                    size: 35,
+                                                    color: Colors.black,
+                                                  ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          state.isDiscovering
+                              ? Expanded(
+                                  child: ListView.builder(
+                                    itemCount: results.length,
+                                    itemBuilder: (BuildContext context, index) {
+                                      BluetoothDiscoveryResult result =
+                                          results[index];
+                                      return Card(
+                                        color: Colors.grey[400],
+                                        child: BluetoothDeviceListEntry(
+                                            device: result.device,
+                                            rssi: result.rssi,
+                                            onTap: () {
+                                              state.isloading
+                                                  ? null
+                                                  : context
+                                                      .read<
+                                                          MotorControllerBloc>()
+                                                      .add(
+                                                          ConnectToDeviceAndStartListening(
+                                                              result.device));
+                                              //typesOfBalls[0][2] = true;
+                                            }),
                                       );
                                     },
                                   ),
-                                  Center(
-                                    child: Text(
-                                      AppLocalizations.of(context)!.thebowler,
-                                      textAlign: TextAlign.center,
-                                      style:
-                                          GoogleFonts.bebasNeue(fontSize: 25),
-                                    ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                      color: state.isConnected
+                                          ? Colors.grey[200]
+                                          : Colors.black38,
+                                      borderRadius: BorderRadius.circular(30)),
+                                  height: 60,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Commbutton1(
+                                          const Icon(
+                                              Icons.arrow_upward_rounded),
+                                          state.isConnected ? 'i' : null,
+                                          context,
+                                          state.isConnected
+                                              ? Colors.black
+                                              : Colors.white),
+                                      Commbutton1(
+                                          const FaIcon(FontAwesomeIcons.stop),
+                                          state.isConnected ? 'j' : null,
+                                          context,
+                                          state.isConnected
+                                              ? Colors.black
+                                              : Colors.white),
+                                      Commbutton1(
+                                          const Icon(
+                                              Icons.arrow_downward_rounded),
+                                          state.isConnected ? 'k' : null,
+                                          context,
+                                          state.isConnected
+                                              ? Colors.black
+                                              : Colors.white)
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                    ],
-                  ),
-                )));
-          },
-        ),
+                                ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          state.isConnected
+                              ? Container(
+                                  child: StreamBuilder(
+                                      stream: context
+                                          .read<MotorControllerBloc>()
+                                          .dataStream,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasData) {
+                                          log('snaphasdata');
+                                          return Text(
+                                            snapshot.data!,
+                                            style: GoogleFonts.bebasNeue(
+                                                fontSize: 15),
+                                          );
+                                        } else if (snapshot.hasError) {
+                                          log('error in snapshot //${snapshot.error}');
+                                          return Text(
+                                              snapshot.error.toString());
+                                        } else {
+                                          return Text(
+                                              AppLocalizations.of(context)!
+                                                  .ballspeed);
+                                        }
+                                      }))
+                              : const SizedBox(),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          state.isDiscovering
+                              ? const SizedBox()
+                              : Expanded(
+                                  child: ListView(
+                                    children: [
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics: const ClampingScrollPhysics(),
+                                        itemCount: typesOfBalls.length,
+                                        padding: const EdgeInsets.all(20),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 2,
+                                                crossAxisSpacing: 5,
+                                                childAspectRatio: 1 / 1.3),
+                                        itemBuilder: (context, index) {
+                                          return BallBox(
+                                            context: context,
+                                            ballnum:
+                                                state.isConnected ? index : -1,
+                                            onChanged: (value) {
+                                              if (value && state.isConnected) {
+                                                log('coming in side');
+                                                context
+                                                    .read<MotorControllerBloc>()
+                                                    .add(SendMessage(
+                                                        typesOfBalls[index]
+                                                            [3]));
+                                              }
+                                              log('');
+                                              state.isConnected && value
+                                                  ? powerSwitchHadChanged(
+                                                      value, index)
+                                                  : null;
+                                            },
+                                            ballType: ballname(index),
+                                            iconPath: typesOfBalls[index][1],
+                                            powerOn: typesOfBalls[index][2],
+                                          );
+                                        },
+                                      ),
+                                      Center(
+                                        child: Text(
+                                          AppLocalizations.of(context)!
+                                              .thebowler,
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.bebasNeue(
+                                              fontSize: 25),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        ],
+                      ),
+                    )));
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
