@@ -99,16 +99,16 @@ class _MotorControllerEsp32State extends State<MotorControllerEsp32> {
   Future<void> setLang() async {
     prefs = await SharedPreferences.getInstance();
     lang = prefs.getBool('lang') ?? false;
-    print(lang);
+    //print(lang);
     if (lang) {
-      print('lang is true in setlang function');
+      //print('lang is true in setlang function');
       await prefs.setBool('lang', false);
     } else {
-      print('lang is false in setlang function');
+      //print('lang is false in setlang function');
       await prefs.setBool('lang', true);
     }
     lang = prefs.getBool('lang') ?? false;
-    print(lang);
+    //print(lang);
 
     setState(() {});
   }
@@ -123,10 +123,10 @@ class _MotorControllerEsp32State extends State<MotorControllerEsp32> {
       lang = retrievedLang;
     });
     if (lang) {
-      print('lang is true in setlocale function');
+      //print('lang is true in setlocale function');
       return 'hi';
     } else {
-      print('lang is false in setlocale funciton');
+      //print('lang is false in setlocale funciton');
       return 'en';
     }
   }

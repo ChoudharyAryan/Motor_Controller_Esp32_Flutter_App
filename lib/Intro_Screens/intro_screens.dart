@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:motor_controller_esp32/MainPage.dart';
 import 'package:motor_controller_esp32/Intro_Screens/onboarding_screens_1.dart';
 import 'package:motor_controller_esp32/Intro_Screens/onboarding_screens_2.dart';
 import 'package:motor_controller_esp32/Intro_Screens/onboarding_screens_3.dart';
+import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class IntroScreens extends StatefulWidget {
-  const IntroScreens({Key? key}) : super(key: key);
+  const IntroScreens({super.key});
 
   @override
   _IntroScreensState createState() => _IntroScreensState();
@@ -66,18 +66,18 @@ class _IntroScreensState extends State<IntroScreens> {
                         onPressed: () {
                           Navigator.pushAndRemoveUntil(context,
                               MaterialPageRoute(builder: (context) {
-                            return MainPage();
+                            return const AuthView();
                           }), (route) => false);
                         })
                     : CupertinoButton(
-                        padding: EdgeInsets.only(left: 20, right: 20),
+                        padding: const EdgeInsets.only(left: 20, right: 20),
                         child: Text(
                           'next',
                           style: GoogleFonts.bebasNeue(
                               fontSize: 20, color: Colors.grey[400]),
                         ),
                         onPressed: () => _pageController.nextPage(
-                            duration: Duration(milliseconds: 400),
+                            duration: const Duration(milliseconds: 400),
                             curve: Curves.easeIn)),
               ],
             ))

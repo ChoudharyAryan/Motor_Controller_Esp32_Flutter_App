@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:motor_controller_esp32/MainPage.dart';
 import 'package:motor_controller_esp32/services/auth/auth_exceptions.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 import 'package:motor_controller_esp32/util/cupButton.dart';
@@ -66,8 +67,7 @@ class _AuthViewState extends State<AuthView> {
           } else if (state.exception is GenericAuthException) {
             ShowErrorSnackBar(context, 'Failed to register');
           }
-        }
-        if (state is AuthStateForgotPassword) {
+        } else if (state is AuthStateForgotPassword) {
           if (state.hasSentEmail) {
             emailController.clear();
             ShowErrorSnackBar(context, 'Email sent check your inbox');
@@ -77,6 +77,11 @@ class _AuthViewState extends State<AuthView> {
           } else if (state.exception is UserNotFoundAuthException) {
             ShowErrorSnackBar(context, 'User not found');
           }
+        } else if (state is AuthStateLoggedIn) {
+          Navigator.pushAndRemoveUntil(context,
+              MaterialPageRoute(builder: (context) {
+            return MainPage();
+          }), (route) => false);
         }
         welcomeText = state is AuthStateUnInitialized ||
                 state is AuthStateLoggedOut
