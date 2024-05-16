@@ -1,1 +1,1 @@
-// To be devloped!
+class PlatformException implements Exception {}

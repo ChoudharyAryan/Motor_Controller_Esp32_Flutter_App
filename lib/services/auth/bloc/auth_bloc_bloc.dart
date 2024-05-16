@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -32,9 +34,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthEventLogin>(
       (event, emit) async {
         emit(const AuthStateLoggedOut(
-          exception: null,
-          isLoading: true,
-        ));
+            exception: null,
+            isLoading: true,
+            loadingText: 'logging you in... '));
         final email = event.email;
         final password = event.password;
         try {
@@ -59,6 +61,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             ));
           }
         } on Exception catch (e) {
+          log('Exception is what you think it is ${e.toString()}');
           emit(AuthStateLoggedOut(
             exception: e,
             isLoading: false,
@@ -88,6 +91,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           await provider.sendEmailVerification();
           emit(const AuthStateNeedsVerification(isLoading: false));
         } on Exception catch (e) {
+          log("Exception is $e");
           emit(AuthStateRegistring(
             exception: e,
             isLoading: false,
@@ -98,12 +102,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthEventLogOut>(
       (event, emit) async {
         try {
+          log('inside authevent logout!');
           await provider.logOut();
           emit(const AuthStateLoggedOut(
             exception: null,
             isLoading: false,
           ));
         } on Exception catch (e) {
+          log('is there an error in logout $e');
           emit(AuthStateLoggedOut(
             exception: e,
             isLoading: false,
@@ -124,7 +130,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         isLoading: false,
       ));
       final email = event.email;
-      if (email == null) {
+      if (email.isEmpty) {
         // print('email is null');
         // emit(state);  How does this line causes the Authentication error to show up in the forgotpassword page??.
         return;
@@ -133,6 +139,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthStateForgotPassword(
         exception: null,
         hasSentEmail: false,
+        loadingText: 'sending password reset email...',
         isLoading: true,
       ));
       bool didSendEmail;

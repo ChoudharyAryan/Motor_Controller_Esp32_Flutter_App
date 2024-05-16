@@ -8,6 +8,7 @@ abstract class MotorControllerState extends Equatable {
   final bool isDisconnected;
   final String? string;
   final bool isloading;
+  final String loadingText;
   final bool isDiscoverd;
   final BluetoothDiscoveryResult? discoveryResult;
   final BluetoothDevice? device;
@@ -16,9 +17,10 @@ abstract class MotorControllerState extends Equatable {
   const MotorControllerState(
       {this.isConnected = false,
       this.isDisconnected = false,
+      this.loadingText = 'please wait',
       this.string,
       this.exception,
-      this.isloading = true,
+      this.isloading = false,
       this.isDiscoverd = false,
       this.data,
       this.discoveryResult,
@@ -32,11 +34,14 @@ abstract class MotorControllerState extends Equatable {
 
 class MotorControllerInitial extends MotorControllerState {
   final String? string;
+  final bool isloading;
   const MotorControllerInitial({
     required bool isDiscovering,
+    required this.isloading,
     this.string,
     required bool isConnecting,
   }) : super(
+          isloading: isloading,
           isDisconnected: true,
           string: string,
           isDiscovering: isDiscovering,
@@ -47,20 +52,22 @@ class MotorControllerInitial extends MotorControllerState {
 class MotorControllerDiscovering extends MotorControllerState {
   final List<BluetoothDiscoveryResult> results;
   final bool isloading;
+  final String loadingText;
   final Exception? exception;
   const MotorControllerDiscovering(
       {required bool isDiscovering,
       required this.isloading,
+      this.loadingText = 'please wait',
       required bool isConnecting,
       required bool isDiscoverd,
       required this.exception,
       required this.results})
       : super(
-          isDiscovering: isDiscovering,
-          isDiscoverd: isDiscoverd,
-          isConnecting: isConnecting,
-          isloading: isloading,
-        );
+            isDiscovering: isDiscovering,
+            isDiscoverd: isDiscoverd,
+            isConnecting: isConnecting,
+            isloading: isloading,
+            loadingText: loadingText);
   @override
   List<Object> get props => [isDiscovering, isConnecting, results];
 }
@@ -69,13 +76,19 @@ class MotorControllerConnecting extends MotorControllerState {
   final Exception? exception;
   final bool isDiscovering;
   final bool isConnecting;
+  final String loadingText;
   final bool isDiscovered;
+  final bool isloading;
   const MotorControllerConnecting(
       {required this.isConnecting,
+      this.loadingText = 'please wait',
+      required this.isloading,
       required this.exception,
       required this.isDiscovered,
       required this.isDiscovering})
       : super(
+            isloading: isloading,
+            loadingText: loadingText,
             isDiscoverd: isDiscovered,
             isDiscovering: isDiscovering,
             isConnecting: isConnecting,
@@ -85,14 +98,17 @@ class MotorControllerConnecting extends MotorControllerState {
 class MotorControllerConnectedAndListening extends MotorControllerState {
   final Exception? exception;
   final Stream<String> data;
+  final bool isloading;
   const MotorControllerConnectedAndListening({
     required bool isDiscovering,
     required bool isConnecting,
+    required this.isloading,
     required bool isConnected,
     required this.data,
     required this.exception,
   }) : super(
             exception: exception,
+            isloading: isloading,
             isConnecting: isConnecting,
             isDiscovering: isDiscovering,
             data: data,
@@ -105,6 +121,7 @@ class MotorControllerConnectedAndListening extends MotorControllerState {
 class MotorControllerDisconnected extends MotorControllerState {
   final Exception? exception;
   final bool isDisconnecting;
+  final bool isloading;
   final String? str;
   final List<BluetoothDiscoveryResult> results;
   MotorControllerDisconnected({
@@ -112,6 +129,7 @@ class MotorControllerDisconnected extends MotorControllerState {
     required bool isDiscovering,
     required this.results,
     required this.isDisconnecting,
+    required this.isloading,
     required this.str,
     required bool isConnecting,
   }) : super(
@@ -123,18 +141,18 @@ class MotorControllerDisconnected extends MotorControllerState {
 }
 
 class MotorControllerException extends MotorControllerState {
-  final Exception exception;
+  final String string;
   final bool isDiscovering;
   final bool isConnecting;
   final bool isConnected;
   MotorControllerException(
-      {required this.exception,
+      {required this.string,
       required this.isConnected,
       required this.isConnecting,
       required this.isDiscovering})
       : super(
           isConnecting: false,
           isDiscovering: false,
-          exception: exception,
+          string: string,
         );
 }

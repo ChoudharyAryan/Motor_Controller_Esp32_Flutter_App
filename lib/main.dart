@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +10,7 @@ import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
 import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
 import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
+import 'package:motor_controller_esp32/util/loading_screen/loading_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -149,12 +149,16 @@ class HomePage extends StatelessWidget {
     log('inside the home page');
     return BlocConsumer<AuthBloc, AuthState>(listener: (context, state) {
       if (state.isLoading) {
-        ShowMyDilog(context, 'Please wait a moment');
+        LoadingScreen().show(
+          context: context,
+          text: 'please wait in Main.dart file',
+        );
       } else {
-        //Navigator.of(context).pop();
+        LoadingScreen().hide();
       }
     }, builder: (context, state) {
       if (state is AuthStateLoggedIn) {
+        log("inside the if statement ");
         log("state is $state");
         return MainPage();
       } else if (user == null ||
@@ -164,7 +168,14 @@ class HomePage extends StatelessWidget {
           state is AuthStateForgotPassword ||
           state is AuthEventSendEmailVerificationEmail) {
         log("state is $state");
+        log("inside the elseif statement");
         return const AuthView();
+      } else if (state is AuthStateUnInitialized) {
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
       } else {
         return const Scaffold(
           body: Center(

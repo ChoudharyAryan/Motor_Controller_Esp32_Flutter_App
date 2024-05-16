@@ -16,9 +16,11 @@ import 'package:motor_controller_esp32/util/BluetoothDeviceListEntry.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 import 'package:motor_controller_esp32/util/ball_box.dart';
 import 'package:motor_controller_esp32/util/commButton.dart';
+import 'package:motor_controller_esp32/util/loading_screen/loading_screen.dart';
 import 'package:motor_controller_esp32/util/myPopUp.dart';
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:motor_controller_esp32/util/normalPopUp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -73,11 +75,31 @@ class _MainPage extends State<MainPage> {
     _loadUserName();
   }
 
-  void _startTimer() async {
-    Timer.periodic(const Duration(seconds: 5), (timer) {
-      // Trigger setState every 2 seconds
-      setState(() {});
-      //_startTimer();
+  void _startTimer(BuildContext context) async {
+    BlocListener<MotorControllerBloc, MotorControllerState>(
+        listener: (context, state) {
+      if (state is MotorControllerDiscovering) {
+        Timer.periodic(const Duration(seconds: 5), (timer) {
+          // Trigger setState every 2 seconds
+          // final authstate = context.read<AuthBloc>().state;
+          // if (authstate is! AuthStateLoggedOut ||
+          //     authstate is! AuthStateRegistring ||
+          //     authstate is! AuthStateForgotPassword ||
+          //     authstate is! AuthStateNeedsVerification) {
+          //   final blocstate = context.read<MotorControllerBloc>().state;
+          //   if (blocstate is MotorControllerDiscovering) {
+          //     setState(() {});
+          //   }
+          // }'
+          log('gona call the setstate');
+          setState(() {});
+
+          //_startTimer();
+        });
+      } else {
+        log('gona return from _startTimer function');
+        return;
+      }
     });
   }
 
@@ -104,22 +126,29 @@ class _MainPage extends State<MainPage> {
         ),
       ],
       child: BlocConsumer<MotorControllerBloc, MotorControllerState>(
-        listener: (context, state) {
+        listener: (context, state) async {
+          if (state.isloading) {
+            LoadingScreen().show(context: context, text: state.loadingText);
+          } else {
+            LoadingScreen().hide();
+          }
           if (state is MotorControllerException) {
-            if (state.exception is PlatformException) {
-              ShowMyDilog(context, AppLocalizations.of(context)!.plf);
-              context.read<MotorControllerBloc>().add(const EmitInitial());
-            } else {
-              ShowMyDilog(context, state.exception.toString());
-              context.read<MotorControllerBloc>().add(const EmitInitial());
-            }
+            ShowMyDilog(
+                context,
+                //AppLocalizations.of(context)!.plf
+                state.string);
+            // if (state.exception is PlatformException) {
+            // }
+            // else {
+            //   ShowMyDilog(context, state.string);
+            // }
           } else if (state.string != null) {
             ShowErrorSnackBar(context, state.string!);
           }
           if (state is MotorControllerDiscovering) {
             //setState(() {});
 
-            _startTimer();
+            _startTimer(context);
           }
         },
         builder: (context, state) {
@@ -189,24 +218,6 @@ class _MainPage extends State<MainPage> {
                                 style: GoogleFonts.bebasNeue(fontSize: 35),
                               ),
                             ),
-                            state.isConnected
-                                ? MyPopUp(
-                                    typeOfBall: typesOfBalls,
-                                    m1inc: 'l',
-                                    m2inc: 'm',
-                                    m2dec: 'n',
-                                    m1dec: 'o',
-                                    reset: 'r',
-                                    //intArgument: onsec(),
-                                  )
-                                : Container(),
-                            TextButton(
-                                onPressed: () {
-                                  MotorControllerEsp32 motorController =
-                                      const MotorControllerEsp32();
-                                  motorController.setLang(context);
-                                },
-                                child: const FaIcon(FontAwesomeIcons.language))
                           ],
                         ),
                         // TextButton(
@@ -217,37 +228,23 @@ class _MainPage extends State<MainPage> {
                         //     child: const Text('Lang')),
                         Row(
                           children: [
-                            GestureDetector(
-                                onTap: () {
-                                  context
-                                      .read<AuthBloc>()
-                                      .add(const AuthEventLogOut());
-                                },
-                                child: const Icon(
-                                  Icons.logout_rounded,
-                                  size: 35,
-                                  color: Colors.black,
-                                )),
-                            SizedBox(
-                              child: state.isConnected
-                                  ? const Icon(
-                                      Icons.bluetooth_connected_rounded,
-                                      size: 35,
-                                      color: Colors.black,
-                                    )
-                                  : state.isDiscovering
-                                      ? LoadingAnimationWidget.beat(
-                                          color: Colors.grey, size: 30)
-                                      : state.isConnecting
-                                          ? LoadingAnimationWidget
-                                              .discreteCircle(
-                                                  color: Colors.grey, size: 30)
-                                          : const Icon(
-                                              Icons.bluetooth_disabled_rounded,
-                                              size: 35,
-                                              color: Colors.black,
-                                            ),
+                            NormalPopUp(
+                              typeOfBall: typesOfBalls,
+                              reset: 'r',
+                              //intArgument: onsec(),
                             ),
+                            SizedBox(
+                                child: state.isConnected
+                                    ? null
+                                    : state.isDiscovering
+                                        ? LoadingAnimationWidget.beat(
+                                            color: Colors.grey, size: 30)
+                                        : state.isConnecting
+                                            ? LoadingAnimationWidget
+                                                .discreteCircle(
+                                                    color: Colors.grey,
+                                                    size: 30)
+                                            : null),
                           ],
                         )
                       ],
@@ -456,18 +453,6 @@ class _MainPage extends State<MainPage> {
   //   MotorControllerEsp32.setLocale(context, newLocale);
   // }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // return Scaffold(
 //                     floatingActionButton: !state.isDiscovering &&

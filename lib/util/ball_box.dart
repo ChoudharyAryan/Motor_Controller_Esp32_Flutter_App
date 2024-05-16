@@ -25,8 +25,8 @@ class BallBox extends StatelessWidget {
     print('normal popup');
     return NormalPopUp(
       typeOfBall: const [],
-      inc: 'P',
-      dec: 'Q',
+      // inc: 'P',
+      // dec: 'Q',
       reset: 'R',
     );
   }
@@ -34,8 +34,8 @@ class BallBox extends StatelessWidget {
   NormalPopUp normalfballpopup() {
     return NormalPopUp(
       typeOfBall: const [],
-      inc: 'S',
-      dec: 'T',
+      // inc: 'S',
+      // dec: 'T',
       reset: 'U',
     );
   }
@@ -43,21 +43,21 @@ class BallBox extends StatelessWidget {
   NormalPopUp normalsballpopup() {
     return NormalPopUp(
       typeOfBall: const [],
-      inc: 'V',
-      dec: 'W',
+      // inc: 'V',
+      // dec: 'W',
       reset: 'X',
     );
   }
 
-  MyPopUp rightswpopup() {
-    return MyPopUp(
-        typeOfBall: const [],
-        m1inc: 'p',
-        m2inc: 'q',
-        m1dec: 's',
-        m2dec: 't',
-        reset: 'u');
-  }
+  // MyPopUp rightswpopup() {
+  //   return MyPopUp(
+  //       typeOfBall: const [],
+  //       m1inc: 'p',
+  //       m2inc: 'q',
+  //       m1dec: 's',
+  //       m2dec: 't',
+  //       reset: 'u');
+  // }
 
   void leftswpopup(BuildContext context) {
     print('inside the leftswpopup function');
@@ -97,7 +97,7 @@ class BallBox extends StatelessWidget {
                 } else if (ballnum == 2) {
                   normalsballpopup();
                 } else if (ballnum == 3) {
-                  rightswpopup();
+                  // rightswpopup();
                 } else if (ballnum == 4) {
                   print('inside the leftswing ball');
                   leftswpopup(context);

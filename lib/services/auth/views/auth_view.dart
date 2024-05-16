@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +10,7 @@ import 'package:motor_controller_esp32/services/auth/auth_exceptions.dart';
 import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 import 'package:motor_controller_esp32/util/cupButton.dart';
+import 'package:motor_controller_esp32/util/loading_screen/loading_screen.dart';
 import 'package:motor_controller_esp32/util/squareTile.dart';
 import 'package:motor_controller_esp32/util/textfield.dart';
 import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
@@ -44,12 +47,17 @@ class _AuthViewState extends State<AuthView> {
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state.isLoading) {
-            LoadingAnimationWidget.discreteCircle(
-              color: Colors.grey,
-              size: 30,
+            log('let it load i said let it load');
+            LoadingScreen().show(
+              context: context,
+              text: state.loadingText ?? 'please wait',
             );
+          } else {
+            log('stop the loading');
+            LoadingScreen().hide();
           }
           if (state is AuthStateLoggedOut) {
+            log('LOGGED OUT');
             if (state.exception is UserNotFoundAuthException) {
               ShowErrorSnackBar(
                 context,
@@ -95,7 +103,7 @@ class _AuthViewState extends State<AuthView> {
               : state is AuthStateRegistring
                   ? 'Register Yourself'
                   : state is AuthStateNeedsVerification
-                      ? 'we\'ve just sent you an email verification please click on the link to verify your email'
+                      ? '  we\'ve just sent you an email verification please click on the link to verify your email'
                       : state is AuthStateForgotPassword
                           ? 'Reset Your Password'
                           : 'what\'s left $state';
@@ -167,11 +175,14 @@ class _AuthViewState extends State<AuthView> {
                         ),
 
                         //WELCOME
-                        Text(welcomeText,
-                            style: GoogleFonts.josefinSans(
-                                color: Colors.grey[700],
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                          child: Text(welcomeText,
+                              style: GoogleFonts.josefinSans(
+                                  color: Colors.grey[700],
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700)),
+                        ),
                         const SizedBox(
                           height: 25,
                         ),

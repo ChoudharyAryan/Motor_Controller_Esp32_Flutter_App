@@ -81,7 +81,7 @@
     "@confirm": {
         "description": "confirm"
     },
-    "restartwarning": "you are restarting The Bowler you will be disconnected and have reconnect to the device ",
+    "restartwarning": "you are restarting The Bowler you will be disconnected and have to reconnect to the device ",
     "@restartwarning":{
         "description": "the bowler restart warning"
     }
