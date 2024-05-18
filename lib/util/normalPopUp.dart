@@ -57,7 +57,7 @@ class NormalPopUp extends StatelessWidget {
       create: ((context) => MotorControllerBloc()),
       child: PopupMenuButton<ActionMenu>(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        color: Colors.grey[400],
+        color: Colors.grey[300],
         icon: const Icon(
           Icons.menu_rounded,
         ),

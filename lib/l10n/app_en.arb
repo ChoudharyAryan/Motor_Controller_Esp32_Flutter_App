@@ -8,7 +8,7 @@
     "@hi":{
         "description": "A Programmer Gretting"
     },
-    "normal": "Normal",
+    "normal": "Forward",
     "@multiLanguage":{
         "description": "Type of Ball"
     },   

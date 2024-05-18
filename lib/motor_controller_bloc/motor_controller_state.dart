@@ -29,7 +29,7 @@ abstract class MotorControllerState extends Equatable {
       required this.isDiscovering});
 
   @override
-  List<Object> get props => [isDiscovering, isConnecting];
+  List<Object> get props => [isDiscovering, isConnecting, isConnected];
 }
 
 class MotorControllerInitial extends MotorControllerState {
@@ -69,7 +69,7 @@ class MotorControllerDiscovering extends MotorControllerState {
             isloading: isloading,
             loadingText: loadingText);
   @override
-  List<Object> get props => [isDiscovering, isConnecting, results];
+  List<Object> get props => [isDiscovering, isConnecting, results, isConnected];
 }
 
 class MotorControllerConnecting extends MotorControllerState {
@@ -93,6 +93,9 @@ class MotorControllerConnecting extends MotorControllerState {
             isDiscovering: isDiscovering,
             isConnecting: isConnecting,
             exception: exception);
+
+  @override
+  List<Object> get props => [isDiscovering, isConnecting, isConnected];
 }
 
 class MotorControllerConnectedAndListening extends MotorControllerState {
@@ -115,7 +118,7 @@ class MotorControllerConnectedAndListening extends MotorControllerState {
             isConnected: isConnected);
 
   @override
-  List<Object> get props => [isDiscovering, isConnecting, data];
+  List<Object> get props => [isDiscovering, isConnecting, isConnected, data];
 }
 
 class MotorControllerDisconnected extends MotorControllerState {

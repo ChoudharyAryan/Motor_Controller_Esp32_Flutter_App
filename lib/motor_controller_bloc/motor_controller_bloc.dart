@@ -279,7 +279,7 @@ class MotorControllerBloc
       try {
         log('INSIDE the try catch bloc of _connectTODeviceANdSTsrtListening');
         await BluetoothConnection.toAddress(event.device.address)
-            .then((_connection) {
+            .then((_connection) async {
           log('Pressed the button too many times');
           connection = _connection;
 
@@ -290,7 +290,8 @@ class MotorControllerBloc
             streamSubscriptiondata?.cancel();
             streamSubscriptiondata = connection?.input?.listen(_onDataRecived);
             log('What is the probelem $incomingData');
-            _sendMessage(const SendMessage('i'), emit);
+            //await _sendMessage(const SendMessage('i'), emit);
+            log('came back and now going to emit state Connectedadn Listening');
 
             emit(MotorControllerConnectedAndListening(
                 isDiscovering: false,
@@ -350,9 +351,10 @@ class MotorControllerBloc
         isConnecting: false,
       ));
     }
+    // _sendMessage(const SendMessage('i'), emit);
   }
 
-  void _sendMessage(
+  Future<void> _sendMessage(
       SendMessage event, Emitter<MotorControllerState> emit) async {
     if (!_bluetoothState.isEnabled) {
       await FlutterBluetoothSerial.instance.requestEnable();
@@ -397,7 +399,7 @@ class MotorControllerBloc
     }
   }
 
-  void _disconnect(Disconnect event, Emitter<MotorControllerState> emit) {
+  void _disconnect(Disconnect event, Emitter<MotorControllerState> emit) async {
     try {
       log('Disconnect Function');
       if (event.results.isNotEmpty) {
@@ -412,9 +414,9 @@ class MotorControllerBloc
         }
       }
       connection?.dispose();
-      streamSubscriptiondata?.cancel();
+      await streamSubscriptiondata?.cancel();
       streamSubscriptiondata = null;
-      _dataController?.close();
+      await _dataController?.close();
     } on Exception catch (e) {
       log('There is an exception inside the _disconnect function');
       emit(MotorControllerException(

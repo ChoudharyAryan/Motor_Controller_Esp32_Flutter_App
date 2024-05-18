@@ -9,7 +9,6 @@ import 'package:motor_controller_esp32/l10n/l10n.dart';
 import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
 import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
 import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
-import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 import 'package:motor_controller_esp32/util/loading_screen/loading_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
