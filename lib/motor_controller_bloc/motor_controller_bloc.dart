@@ -118,6 +118,7 @@ class MotorControllerBloc
   StreamSubscription? streamSubscriptiondata;
   String incomingData = '';
   DateTime _lastDiscoveryTime = DateTime.now();
+  Set<String> discoveredDevices = {};
   MotorControllerBloc()
       : super(const MotorControllerInitial(
           isConnecting: false,
@@ -141,7 +142,8 @@ class MotorControllerBloc
 
   void _startDiscovery(
       StartDiscovery event, Emitter<MotorControllerState> emit) async {
-    if (DateTime.now().difference(_lastDiscoveryTime).inSeconds < 3) {
+    if (DateTime.now().difference(_lastDiscoveryTime).inSeconds < 1) {
+      log('it kicked me out');
       return;
     }
     _bluetoothState = await FlutterBluetoothSerial.instance.state;
@@ -191,6 +193,7 @@ class MotorControllerBloc
     //   // Permission.bluetoothScan,
     //   Permission.location
     // ].request();
+    discoveredDevices.clear();
     event.results.clear();
     _lastDiscoveryTime = DateTime.now();
     log('inside the _startDiscovery function');
@@ -215,22 +218,27 @@ class MotorControllerBloc
           .where((r) => r.device.name?.startsWith('ESP32') ?? false)) {
         log(r.device.name.toString());
         log('adding the discovey result to the list');
-        event.results.add(r);
-        emit(MotorControllerDiscovering(
-            isDiscovering: true,
-            isDiscoverd: false,
-            isloading: false,
-            isConnecting: false,
-            results: event.results,
-            exception: null));
-        log('discovery result is ${r.device.name}');
+        if (!discoveredDevices.contains(r.toString())) {
+          event.results.add(r);
+          discoveredDevices.add(r.toString());
+          emit(MotorControllerDiscovering(
+              isDiscovering: true,
+              isDiscoverd: false,
+              isloading: false,
+              isConnecting: false,
+              results: event.results,
+              exception: null));
+          log('discovery result is ${r.device.name}');
+        }
       }
     } on Exception catch (e) {
       log('There is an exception inside the _startDiscovery function $e');
       emit(MotorControllerInitial(
           string: e.toString().contains('no_permissions')
               ? 'Bluetooth and Location Acess Required'
-              : e.toString().replaceFirst('Exception: ', ''),
+              : e.toString().contains('PermissionHandler.PermissionManager')
+                  ? 'A request permission is already running'
+                  : e.toString().replaceFirst('Exceptions: ', ''),
           isConnecting: false,
           isloading: false,
           isDiscovering: false));

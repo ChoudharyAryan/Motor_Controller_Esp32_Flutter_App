@@ -33,7 +33,7 @@ class _MainPage extends State<MainPage> {
   bool isoff = false;
   late SharedPreferences pref;
   List typesOfBalls = [
-    ['Forward', 'lib/images/stump.png', true, 'f', 's'],
+    ['Forward', 'lib/images/stump.png', false, 'f', 's'],
     ['Right Swing', 'lib/images/stump.png', false, 'r', 'i'],
     ['Left Swing', 'lib/images/stump.png', false, 'l', 't'],
   ];
@@ -60,10 +60,13 @@ class _MainPage extends State<MainPage> {
     });
   }
 
+  bool ballfeeder = false;
+
   @override
   void initState() {
     _loadUserName();
     _getSwingLevel();
+    setFeeder();
 
     super.initState();
   }
@@ -103,7 +106,30 @@ class _MainPage extends State<MainPage> {
     });
   }
 
+  void _startTimeragain(BuildContext context) async {
+    BlocListener<MotorControllerBloc, MotorControllerState>(
+        listener: (context, state) {
+      if (state is MotorControllerDiscovering) {
+        Timer.periodic(const Duration(seconds: 3), (timer) {
+          log('gona call the setstate');
+          setState(() {});
+
+          //_startTimer();
+        });
+      } else {
+        log('gona return from _startTimer function');
+        return;
+      }
+    });
+  }
+
+  int feeder = 0;
   bool isConnected = false;
+
+  Future<void> setFeeder() async {
+    pref = await SharedPreferences.getInstance();
+    feeder = pref.getInt('feeder') ?? 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +159,12 @@ class _MainPage extends State<MainPage> {
             isConnected = false;
 
             _startTimer(context);
+            _startTimeragain(context);
           } else if (state is MotorControllerConnectedAndListening) {
             log(state.toString());
             log('this is the state now');
             isConnected = true;
+            typesOfBalls[0][2] = true;
             context.read<MotorControllerBloc>().add(
                   SendMessage('f${ballswing[0]}#'),
                 );
@@ -150,7 +178,7 @@ class _MainPage extends State<MainPage> {
                       !state.isConnecting &&
                       !state.isConnected
                   ? FloatingActionButton(
-                      backgroundColor: Colors.grey[400],
+                      backgroundColor: Colors.grey[300],
                       onPressed: () {
                         log('start Discovery*********');
                         context
@@ -266,7 +294,7 @@ class _MainPage extends State<MainPage> {
                                 color: state.isConnected
                                     ? Colors.grey[200]
                                     : Colors.black,
-                                borderRadius: BorderRadius.circular(30)),
+                                borderRadius: BorderRadius.circular(15)),
                             height: 60,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -307,27 +335,204 @@ class _MainPage extends State<MainPage> {
                       height: 20,
                     ),
                     state.isConnected
-                        ? Container(
-                            child: StreamBuilder(
-                                stream: context
-                                    .read<MotorControllerBloc>()
-                                    .dataStream,
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    log('snaphasdata');
-                                    return Text(
-                                      snapshot.data!,
-                                      style:
-                                          GoogleFonts.bebasNeue(fontSize: 15),
-                                    );
-                                  } else if (snapshot.hasError) {
-                                    log('error in snapshot //${snapshot.error}');
-                                    return Text(snapshot.error.toString());
-                                  } else {
-                                    return Text(AppLocalizations.of(context)!
-                                        .ballspeed);
-                                  }
-                                }))
+                        ? Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.black,
+                                      ),
+                                      onPressed: () async {
+                                        if (feeder < 10) {
+                                          ++feeder;
+                                          context
+                                              .read<MotorControllerBloc>()
+                                              .add(
+                                                SendMessage('x$feeder'),
+                                              );
+                                          await pref.setInt('feeder', feeder);
+                                          setState(() {});
+                                        }
+                                      },
+                                      child: const Icon(
+                                        Icons.arrow_upward,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 5,
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.black,
+                                      ),
+                                      onPressed: () async {
+                                        if (feeder > 0) {
+                                          --feeder;
+                                          context
+                                              .read<MotorControllerBloc>()
+                                              .add(
+                                                SendMessage('x$feeder'),
+                                              );
+                                          await pref.setInt('feeder', feeder);
+                                          setState(() {});
+                                        }
+                                      },
+                                      child: const Icon(
+                                        Icons.arrow_downward,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.50,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(15),
+                                        // border: Border.all(
+                                        //   color: Colors.black,
+                                        //   width: 2,
+                                        // ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.shade500,
+                                            offset: const Offset(4.0, 4.0),
+                                            blurRadius: 15.0,
+                                            spreadRadius: 1.0,
+                                          ),
+                                          const BoxShadow(
+                                            color: Colors.white,
+                                            offset: Offset(-4.0, -4.0),
+                                            blurRadius: 15.0,
+                                            spreadRadius: 1.0,
+                                          )
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: StreamBuilder(
+                                            stream: context
+                                                .read<MotorControllerBloc>()
+                                                .dataStream,
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                log('snaphasdata');
+                                                return Text(
+                                                  snapshot.data!,
+                                                  style: GoogleFonts.bebasNeue(
+                                                      fontSize: 15),
+                                                );
+                                              } else if (snapshot.hasError) {
+                                                log('error in snapshot //${snapshot.error}');
+                                                return Text(
+                                                    snapshot.error.toString());
+                                              } else {
+                                                return Text(
+                                                  AppLocalizations.of(context)!
+                                                      .ballspeed,
+                                                  style: GoogleFonts.bebasNeue(
+                                                    fontSize: 18,
+                                                    color: Colors.black,
+                                                  ),
+                                                );
+                                              }
+                                            }),
+                                      )),
+                                  GestureDetector(
+                                    onTap: () {
+                                      context.read<MotorControllerBloc>().add(
+                                            SendMessage(
+                                              ballfeeder ? 'y' : 'i$feeder',
+                                            ),
+                                          );
+                                      setState(() {
+                                        ballfeeder = !ballfeeder;
+                                      });
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.40,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        color: ballfeeder
+                                            ? Colors.black
+                                            : Colors.grey[300],
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.shade500,
+                                            offset: const Offset(4.0, 4.0),
+                                            blurRadius: 15.0,
+                                            spreadRadius: 1.0,
+                                          ),
+                                          const BoxShadow(
+                                            color: Colors.white,
+                                            offset: Offset(-4.0, -4.0),
+                                            blurRadius: 15.0,
+                                            spreadRadius: 1.0,
+                                          )
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'feeder',
+                                                style: GoogleFonts.bebasNeue(
+                                                  fontSize: 18,
+                                                  color: ballfeeder
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                width: 5,
+                                              ),
+                                              Text(
+                                                feeder.toString(),
+                                                style: GoogleFonts.bebasNeue(
+                                                  fontSize: 18,
+                                                  color: ballfeeder
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          Center(
+                                            child: Icon(
+                                              Icons.circle_rounded,
+                                              size: 35,
+                                              color: ballfeeder
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          )
                         : const SizedBox(),
                     const SizedBox(
                       height: 20,
@@ -391,7 +596,7 @@ class _MainPage extends State<MainPage> {
 
   String ballname(int index) {
     if (index == 0) {
-      return AppLocalizations.of(context)!.normal;
+      return AppLocalizations.of(context)!.forward;
     } else if (index == 1) {
       return AppLocalizations.of(context)!.rightswing;
     } else if (index == 2) {

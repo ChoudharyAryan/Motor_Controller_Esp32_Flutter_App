@@ -1,7 +1,8 @@
 {
+    "@@locale": "hi",
     "language": "भाषा",
     "hi": "हैलो",
-    "normal": "सामान्य",
+    "forward": "सामान्य",
     "normalfast": "सामान्य तेज़",
     "normalslow": "सामान्य धीमा",
     "rightswing": "दाहिनी स्विंग",
