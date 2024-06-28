@@ -26,14 +26,6 @@ Future<void> main() async {
 class MotorControllerEsp32 extends StatefulWidget {
   const MotorControllerEsp32({super.key});
 
-  // static void setLocale(BuildContext context, Locale newLocale) {
-  //   print('inside the main.dart file');
-  //   _MotorControllerEsp32State? state =
-  //       context.findAncestorStateOfType<_MotorControllerEsp32State>();
-  //   state!.setLocale(newLocale);
-  //   print('state!.setlocale is done');
-  // }
-
   void setLang(BuildContext context) {
     _MotorControllerEsp32State? state =
         context.findAncestorStateOfType<_MotorControllerEsp32State>();
@@ -84,18 +76,7 @@ class _MotorControllerEsp32State extends State<MotorControllerEsp32> {
         debugShowCheckedModeBanner: false,
         home: BlocProvider<AuthBloc>(
           create: ((context) => AuthBloc(FirebaseAuthProvider())),
-          child: introDone
-              ? const HomePage()
-              // BlocBuilder<AuthBloc, AuthState>(builder: (context, state) {
-              //     if (state is AuthStateLoggedIn) {
-              //       print('State is $state');
-              //       return MainPage();
-              //     } else {
-              //       print('State is $state');
-              //       return const AuthView();
-              //     }
-              //   })
-              : const IntroScreens(),
+          child: introDone ? const HomePage() : const IntroScreens(),
         )
         //
         );

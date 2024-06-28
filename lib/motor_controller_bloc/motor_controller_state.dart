@@ -13,7 +13,7 @@ abstract class MotorControllerState extends Equatable {
   final BluetoothDiscoveryResult? discoveryResult;
   final BluetoothDevice? device;
   final Exception? exception;
-  final Stream<String>? data;
+  final String? data;
   const MotorControllerState(
       {this.isConnected = false,
       this.isDisconnected = false,
@@ -100,7 +100,7 @@ class MotorControllerConnecting extends MotorControllerState {
 
 class MotorControllerConnectedAndListening extends MotorControllerState {
   final Exception? exception;
-  final Stream<String> data;
+  final String data;
   final bool isloading;
   const MotorControllerConnectedAndListening({
     required bool isDiscovering,

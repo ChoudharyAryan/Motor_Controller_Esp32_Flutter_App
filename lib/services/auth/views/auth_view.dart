@@ -312,10 +312,6 @@ class _AuthViewState extends State<AuthView> {
                         ),
 
                         //GOOGLE
-                        const SquareTile(imagePath: 'lib/images/google.png'),
-                        const SizedBox(
-                          height: 50,
-                        ),
 
                         //REGISTER
                         Row(

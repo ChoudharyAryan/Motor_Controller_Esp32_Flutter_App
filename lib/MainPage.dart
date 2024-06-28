@@ -33,11 +33,11 @@ class _MainPage extends State<MainPage> {
   bool isoff = false;
   late SharedPreferences pref;
   List typesOfBalls = [
-    ['Forward', 'lib/images/stump.png', false, 'f', 's'],
-    ['Right Swing', 'lib/images/stump.png', false, 'r', 'i'],
-    ['Left Swing', 'lib/images/stump.png', false, 'l', 't'],
+    ['Forward', 'lib/images/stump.png', false, 'i', 'k', 'f'],
+    ['Right Swing', 'lib/images/stump.png', false, 'p', 't', 'r'],
+    ['Left Swing', 'lib/images/stump.png', false, 'p', 't', 'l'],
   ];
-  List<int> ballswing = [0, 0, 0];
+  //List<int> ballswing = [0, 0, 0];
 
   // ['Normal Fast', 'lib/images/stump.png', false, 'b', 'd', 2],
   // ['Normal Slow', 'lib/images/stump.png', false, 'c', 'e', 3],
@@ -45,39 +45,43 @@ class _MainPage extends State<MainPage> {
   // ['Left Spin', 'lib/images/stump.png', false, 'g', 'j', 7],
   // ['Yorker', 'lib/images/stump.png', false, 'h', 'm', 8],
   void powerSwitchHadChanged(int index) {
-    log('power switcch is tweaked');
+    // log('power switcch is tweaked');
     setState(() {
-      log('inside setstate of mainpage');
+      // log('inside setstate of mainpage');
       for (int i = 0; i < typesOfBalls.length; i++) {
         if (typesOfBalls[i][2] == true) {
           typesOfBalls[i][2] = false;
         }
       }
       if (index != -1) {
-        log('about to turn it to true');
+        // log('about to turn it to true');
         typesOfBalls[index][2] = true;
       }
     });
   }
 
+  String? data;
+  String? speed;
   bool ballfeeder = false;
 
   @override
   void initState() {
     _loadUserName();
-    _getSwingLevel();
-    setFeeder();
-
+    //_getSwingLevel();
+    //setFeeder();
+    swingLevel = 0;
+    fLevel = 0;
     super.initState();
   }
 
-  Future<void> _getSwingLevel() async {
-    pref = await SharedPreferences.getInstance();
-    ballswing[0] = pref.getInt('b1') ?? 0;
-    ballswing[1] = pref.getInt('b2') ?? 0;
-    ballswing[2] = pref.getInt('b3') ?? 0;
-  }
-
+  // Future<void> _getSwingLevel() async {
+  //   pref = await SharedPreferences.getInstance();
+  //   ballswing[0] = pref.getInt('b1') ?? 0;
+  //   ballswing[1] = pref.getInt('b2') ?? 0;
+  //   ballswing[2] = pref.getInt('b3') ?? 0;
+  // }
+  int swingLevel = 0;
+  int fLevel = 0;
   Future<void> _loadUserName() async {
     pref = await SharedPreferences.getInstance();
     username = pref.getString('username') ?? 'user';
@@ -106,6 +110,91 @@ class _MainPage extends State<MainPage> {
     });
   }
 
+  void updateData(BuildContext context) {
+    log('inside the updateData function');
+    data = context.read<MotorControllerBloc>().state.data;
+    log('Updated Data is : $data');
+    if (data != null) {
+      log('dataStream is $data');
+      RegExp regExpF = RegExp(r'F(\d+)\*');
+      RegExp regExpR = RegExp(r'R(\d+)[#*]');
+      RegExp regExpN = RegExp(r'N(\d+)\*');
+      RegExp regExpS = RegExp(r'S([^*]+)\*');
+      RegExp regExpM = RegExp(r'M([^*]+)\*');
+      RegExp regExpC = RegExp(r'C([^*]+)\*');
+      Match? matchC = regExpC.firstMatch(data!);
+      Match? matchS = regExpS.firstMatch(data!);
+      Match? matchM = regExpM.firstMatch(data!);
+      Match? matchN = regExpN.firstMatch(data!);
+      Match? matchF = regExpF.firstMatch(data!);
+      Match? matchR = regExpR.firstMatch(data!);
+      if (matchC != null) {
+        String valueCString = matchC.group(1)!;
+        setState(() {
+          fLevel = int.parse(valueCString);
+        });
+      }
+      if (matchM != null) {
+        String valueMString = matchM.group(1)!;
+        if (valueMString == "r_swing") {
+          powerSwitchHadChanged(1);
+        } else if (valueMString == "l_swing") {
+          powerSwitchHadChanged(2);
+        } else {
+          powerSwitchHadChanged(0);
+        }
+      } else {
+        print("No match found for M.");
+      }
+      if (matchS != null) {
+        String valueSString = matchS.group(1)!;
+        setState(() {
+          speed = valueSString;
+        });
+
+        print("The string value after S is: $valueSString");
+      } else {
+        print("No match found for S.");
+      }
+      if (matchN != null) {
+        String value = matchN.group(1)!;
+        setState(() {
+          swingLevel = int.parse(value);
+        });
+
+        log("The value after N is: $value");
+      } else {
+        print("No match found.");
+      }
+      if (matchF != null) {
+        String valueFString = matchF.group(1)!;
+        if (valueFString == '0') {
+          setState(() {
+            ballfeeder = false;
+          });
+        } else {
+          setState(() {
+            ballfeeder = true;
+          });
+        }
+        //print("The integer value after F is: $valueF");
+      } else {
+        print("No match found for F.");
+      }
+      if (matchR != null) {
+        String valueRString = matchR.group(1)!;
+
+        setState(() {
+          feeder = int.parse(valueRString);
+        });
+
+        //print("The integer value after R is: $valueR");
+      } else {
+        print("No match found for R.");
+      }
+    }
+  }
+
   void _startTimeragain(BuildContext context) async {
     BlocListener<MotorControllerBloc, MotorControllerState>(
         listener: (context, state) {
@@ -117,19 +206,20 @@ class _MainPage extends State<MainPage> {
           //_startTimer();
         });
       } else {
-        log('gona return from _startTimer function');
+        //log('gona return from _startTimer function');
         return;
       }
     });
+    _startTimer(context);
   }
 
   int feeder = 0;
   bool isConnected = false;
 
-  Future<void> setFeeder() async {
-    pref = await SharedPreferences.getInstance();
-    feeder = pref.getInt('feeder') ?? 0;
-  }
+  // Future<void> setFeeder() async {
+  //   pref = await SharedPreferences.getInstance();
+  //   feeder = pref.getInt('feeder') ?? 0;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -161,13 +251,15 @@ class _MainPage extends State<MainPage> {
             _startTimer(context);
             _startTimeragain(context);
           } else if (state is MotorControllerConnectedAndListening) {
-            log(state.toString());
-            log('this is the state now');
+            //log(state.toString());
+            //log('this is the state now');
+
             isConnected = true;
-            typesOfBalls[0][2] = true;
-            context.read<MotorControllerBloc>().add(
-                  SendMessage('f${ballswing[0]}#'),
-                );
+            updateData(context);
+            //typesOfBalls[0][2] = true;
+            // context.read<MotorControllerBloc>().add(
+            //       SendMessage('f${ballswing[0]}#'),
+            //     );
           } else {
             isConnected = false;
           }
@@ -193,11 +285,16 @@ class _MainPage extends State<MainPage> {
                   : state.isConnected
                       ? FloatingActionButton(
                           backgroundColor: Colors.grey[400],
-                          onPressed: () => state.isDisconnected
-                              ? null
-                              : context.read<MotorControllerBloc>().add(
-                                  Disconnect(
-                                      results: results, list: typesOfBalls)),
+                          onPressed: () {
+                            state.isDisconnected
+                                ? null
+                                : context.read<MotorControllerBloc>().add(
+                                    Disconnect(
+                                        results: results, list: typesOfBalls));
+                            swingLevel = 0;
+                            feeder = 0;
+                            ballfeeder = false;
+                          },
                           child: const Icon(
                             Icons.bluetooth_disabled_rounded,
                             color: Colors.black,
@@ -241,7 +338,7 @@ class _MainPage extends State<MainPage> {
                           children: [
                             NormalPopUp(
                               typeOfBall: typesOfBalls,
-                              reset: 'r',
+                              reset: 'a#',
                               //intArgument: onsec(),
                             ),
                             SizedBox(
@@ -301,7 +398,7 @@ class _MainPage extends State<MainPage> {
                               children: [
                                 Commbutton1(
                                   const Icon(Icons.arrow_upward_rounded),
-                                  state.isConnected ? 'i' : null,
+                                  state.isConnected ? 'i#' : null,
                                   context,
                                   state.isConnected
                                       ? Colors.black
@@ -310,7 +407,7 @@ class _MainPage extends State<MainPage> {
                                 ),
                                 Commbutton1(
                                   const FaIcon(FontAwesomeIcons.stop),
-                                  state.isConnected ? 'j' : null,
+                                  state.isConnected ? 'j#' : null,
                                   context,
                                   state.isConnected
                                       ? Colors.black
@@ -321,7 +418,7 @@ class _MainPage extends State<MainPage> {
                                 ),
                                 Commbutton1(
                                   const Icon(Icons.arrow_downward_rounded),
-                                  state.isConnected ? 'k' : null,
+                                  state.isConnected ? 'k#' : null,
                                   context,
                                   state.isConnected
                                       ? Colors.black
@@ -353,7 +450,7 @@ class _MainPage extends State<MainPage> {
                                           context
                                               .read<MotorControllerBloc>()
                                               .add(
-                                                SendMessage('x$feeder'),
+                                                SendMessage('x$feeder#'),
                                               );
                                           await pref.setInt('feeder', feeder);
                                           setState(() {});
@@ -377,7 +474,7 @@ class _MainPage extends State<MainPage> {
                                           context
                                               .read<MotorControllerBloc>()
                                               .add(
-                                                SendMessage('x$feeder'),
+                                                SendMessage('x$feeder#'),
                                               );
                                           await pref.setInt('feeder', feeder);
                                           setState(() {});
@@ -428,14 +525,26 @@ class _MainPage extends State<MainPage> {
                                                 .dataStream,
                                             builder: (context, snapshot) {
                                               if (snapshot.hasData) {
-                                                log('snaphasdata');
-                                                return Text(
-                                                  snapshot.data!,
-                                                  style: GoogleFonts.bebasNeue(
-                                                      fontSize: 15),
-                                                );
+                                                return Text(snapshot.data!,
+                                                    style:
+                                                        GoogleFonts.bebasNeue(
+                                                            fontSize: 15));
+                                                // String fspeed = snapshot.data!;
+                                                // RegExp regExps =
+                                                //     RegExp(r'S([^*]+)\*');
+                                                // Match? matchs =
+                                                //     regExps.firstMatch(fspeed);
+                                                // String valueS = matchs != null
+                                                //     ? matchs.group(1)!
+                                                //     : 'No match found';
+                                                // log("this is the values : $valueS");
+                                                // return Text(
+                                                //   "Speed : $valueS",
+                                                //   style: GoogleFonts.bebasNeue(
+                                                //       fontSize: 15),
+                                                // );
                                               } else if (snapshot.hasError) {
-                                                log('error in snapshot //${snapshot.error}');
+                                                //log('error in snapshot //${snapshot.error}');
                                                 return Text(
                                                     snapshot.error.toString());
                                               } else {
@@ -453,8 +562,8 @@ class _MainPage extends State<MainPage> {
                                   GestureDetector(
                                     onTap: () {
                                       context.read<MotorControllerBloc>().add(
-                                            SendMessage(
-                                              ballfeeder ? 'y' : 'i$feeder',
+                                            const SendMessage(
+                                              'b',
                                             ),
                                           );
                                       setState(() {
@@ -554,22 +663,30 @@ class _MainPage extends State<MainPage> {
                                           childAspectRatio: 1 / 0.4),
                                   itemBuilder: (context, index) {
                                     return BallBox(
-                                      setSwing: (val) async {
-                                        await setswing(index, val);
+                                      fLevel: fLevel,
+                                      swingLevel: swingLevel,
+                                      setSwing: (val) {
+                                        log('Currently the Swing Level is : $swingLevel');
+                                        swingLevel = val;
+                                        log('And Now the Swing Level is : $swingLevel');
+                                        log('ALso this is the val $val');
                                       },
                                       onTap: () {
-                                        log('ballbox no . ${typesOfBalls[index][0]} tapped on!');
+                                        /// log('ballbox no . ${typesOfBalls[index][0]} tapped on!');
+                                        context.read<MotorControllerBloc>().add(
+                                            SendMessage(
+                                                '${typesOfBalls[index][5]}'));
                                         //log(state.toString());
-                                        log(isConnected.toString());
-                                        log(typesOfBalls[index][2].toString());
+                                        // log(isConnected.toString());
+                                        //log(typesOfBalls[index][2].toString());
                                         isConnected
                                             ? powerSwitchHadChanged(index)
                                             : null;
-                                        log(typesOfBalls[index][2].toString());
+                                        //log(typesOfBalls[index][2].toString());
                                       },
                                       inc: typesOfBalls[index][3],
                                       dec: typesOfBalls[index][4],
-                                      swingLevel: ballswing[index],
+                                      // swingLevel: ballswing[index],
                                       ballType: ballname(index),
                                       iconPath: typesOfBalls[index][1],
                                       powerOn: typesOfBalls[index][2],
@@ -606,31 +723,13 @@ class _MainPage extends State<MainPage> {
     }
   }
 
-  Future<void> setswing(int index, int val) async {
-    if (index == 0) {
-      await pref.setInt('b1', val);
-    } else if (index == 1) {
-      await pref.setInt('b2', val);
-    } else if (index == 2) {
-      await pref.setInt('b3', val);
-    }
-  }
+  // Future<void> setswing(int index, int val) async {
+  //   if (index == 0) {
+  //     await pref.setInt('b1', val);
+  //   } else if (index == 1) {
+  //     await pref.setInt('b2', val);
+  //   } else if (index == 2) {
+  //     await pref.setInt('b3', val);
+  //   }
+  // }
 }
-
-
-
-  //ballnum: state.isConnected ? index : -1,
-                                      // onChanged: (value) {
-                                      //   if (value && state.isConnected) {
-                                      //     log('coming in side');
-                                      //     context
-                                      //         .read<MotorControllerBloc>()
-                                      //         .add(SendMessage(
-                                      //             typesOfBalls[index][3]));
-                                      //   }
-                                      //   log('');
-                                      //   state.isConnected && value
-                                      //       ? powerSwitchHadChanged(
-                                      //           value, index)
-                                      //       : null;
-                                      // },

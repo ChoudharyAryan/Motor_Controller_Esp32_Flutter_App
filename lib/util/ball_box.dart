@@ -11,6 +11,8 @@ import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bl
 class BallBox extends StatefulWidget {
   final String inc;
   final String dec;
+  int fLevel;
+
   final String ballType;
   int swingLevel;
   final bool powerOn;
@@ -20,6 +22,7 @@ class BallBox extends StatefulWidget {
   BallBox(
       {super.key,
       required this.inc,
+      required this.fLevel,
       required this.swingLevel,
       required this.setSwing,
       required this.dec,
@@ -37,7 +40,8 @@ class _BallBoxState extends State<BallBox> {
   late String ballType;
   late String dec;
   late bool powerOn;
-  late int swingLevel;
+  late int supSwingLevel;
+  //late int swingLevel;
   late final setSwing;
   late VoidCallback onTap;
   late String iconPath;
@@ -47,8 +51,9 @@ class _BallBoxState extends State<BallBox> {
   void initState() {
     super.initState();
     inc = widget.inc;
+    supSwingLevel = widget.swingLevel;
     setSwing = widget.setSwing;
-    swingLevel = widget.swingLevel;
+    //swingLevel = widget.swingLevel;
     onTap = widget.onTap;
     dec = widget.dec;
     ballType = widget.ballType;
@@ -56,6 +61,8 @@ class _BallBoxState extends State<BallBox> {
     iconPath = widget.iconPath;
     //_getSwingLevel();
   }
+
+  //int swingLevel = 0;
 
   // Future<void> _getSwingLevel() async {
   //   pref = await SharedPreferences.getInstance();
@@ -105,9 +112,13 @@ class _BallBoxState extends State<BallBox> {
                 ),
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                width: swingLevel /
-                    17 *
-                    (MediaQuery.of(context).size.width * 0.85),
+                width: ballType == 'Forward'
+                    ? widget.fLevel /
+                        17 *
+                        (MediaQuery.of(context).size.width * 0.85)
+                    : widget.swingLevel /
+                        17 *
+                        (MediaQuery.of(context).size.width * 0.85),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -132,14 +143,18 @@ class _BallBoxState extends State<BallBox> {
                             if (widget.powerOn) {
                               log('increase button pressed');
                               context.read<MotorControllerBloc>().add(
-                                    SendMessage('$inc$swingLevel#'),
+                                    SendMessage('$inc#'),
                                   );
                               setState(() {
-                                if (swingLevel < 17) {
-                                  swingLevel++;
+                                if (widget.fLevel < 17) {
+                                  if (ballType != 'Forward') {
+                                    widget.swingLevel++;
+                                    setSwing(widget.swingLevel);
+                                  }
+                                  widget.fLevel++;
                                 }
                               });
-                              setSwing(swingLevel);
+                              //setSwing(swingLevel);
                               // pref.setDouble('swingLevel', swingLevel);
                             } else {
                               log('power in not on');
@@ -161,14 +176,18 @@ class _BallBoxState extends State<BallBox> {
                           onPressed: () {
                             if (widget.powerOn) {
                               context.read<MotorControllerBloc>().add(
-                                    SendMessage('$dec$swingLevel#'),
+                                    SendMessage('$dec#'),
                                   );
                               setState(() {
-                                if (swingLevel > 0) {
-                                  swingLevel--;
+                                if (widget.fLevel > 0) {
+                                  if (ballType != 'Forward') {
+                                    widget.swingLevel--;
+                                    setSwing(widget.swingLevel);
+                                  }
+                                  widget.fLevel--;
                                 }
                               });
-                              setSwing(swingLevel);
+                              //setSwing(swingLevel);
                               //pref.setDouble('swingLevel', swingLevel);
                             } else {
                               log('poweron is nott on');
@@ -192,140 +211,3 @@ class _BallBoxState extends State<BallBox> {
     );
   }
 }
-
-// class BallBox extends StatelessWidget {
-//   final String ballType;
-//   final String iconPath;
-//   final bool powerOn;
-//   final onChanged;
-//   final BuildContext context;
-//   final ballnum;
-//   BallBox(
-//       {super.key,
-//       required this.ballType,
-//       required this.context,
-//       required this.onChanged,
-//       required this.iconPath,
-//       required this.powerOn,
-//       required this.ballnum});
-
-//   NormalPopUp normalballpopup() {
-//     print('normal popup');
-//     return NormalPopUp(
-//       typeOfBall: const [],
-//       // inc: 'P',
-//       // dec: 'Q',
-//       reset: 'R',
-//     );
-//   }
-
-//   NormalPopUp normalfballpopup() {
-//     return NormalPopUp(
-//       typeOfBall: const [],
-//       // inc: 'S',
-//       // dec: 'T',
-//       reset: 'U',
-//     );
-//   }
-
-//   NormalPopUp normalsballpopup() {
-//     return NormalPopUp(
-//       typeOfBall: const [],
-//       // inc: 'V',
-//       // dec: 'W',
-//       reset: 'X',
-//     );
-//   }
-
-//   // MyPopUp rightswpopup() {
-//   //   return MyPopUp(
-//   //       typeOfBall: const [],
-//   //       m1inc: 'p',
-//   //       m2inc: 'q',
-//   //       m1dec: 's',
-//   //       m2dec: 't',
-//   //       reset: 'u');
-//   // }
-
-//   void leftswpopup(BuildContext context) {
-//     print('inside the leftswpopup function');
-//     // showDialog(
-//     //     context: context,
-//     //     builder: (BuildContext context) {
-//     //       return MyPopUp(
-//     //           typeOfBall: const [],
-//     //           m1inc: 'v',
-//     //           m2inc: 'w',
-//     //           m1dec: 'x',
-//     //           m2dec: 'y',
-//     //           reset: 'z');
-//     //     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.all(5),
-//       child: Container(
-//         decoration: BoxDecoration(
-//             color: powerOn ? Colors.grey[900] : Colors.grey[200],
-//             borderRadius: BorderRadius.circular(24)),
-//         padding: const EdgeInsets.symmetric(vertical: 25),
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             GestureDetector(
-//               onTap: () {
-//                 print('called the long press button');
-//                 if (ballnum == 0) {
-//                   print('ball num is 0');
-//                   normalballpopup();
-//                 } else if (ballnum == 1) {
-//                   normalfballpopup();
-//                 } else if (ballnum == 2) {
-//                   normalsballpopup();
-//                 } else if (ballnum == 3) {
-//                   // rightswpopup();
-//                 } else if (ballnum == 4) {
-//                   print('inside the leftswing ball');
-//                   leftswpopup(context);
-//                 } else {
-//                   print('simr problem');
-//                   null;
-//                 }
-//               },
-//               child: Image.asset(
-//                 iconPath,
-//                 height: 50,
-//                 color: powerOn ? Colors.white : Colors.black,
-//               ),
-//             ),
-//             Row(
-//               //mainAxisAlignment: MainAxisAlignment.start,
-//               children: [
-//                 Expanded(
-//                     child: Padding(
-//                   padding: const EdgeInsets.only(left: 5),
-//                   child: Text(
-//                     ballType,
-//                     style: TextStyle(
-//                         fontWeight: FontWeight.w600,
-//                         fontSize: 18,
-//                         color: powerOn ? Colors.white : Colors.black),
-//                   ),
-//                 )),
-//                 Transform.rotate(
-//                     angle: pi / 2,
-//                     child: CupertinoSwitch(
-//                         value: powerOn,
-//                         onChanged: onChanged != null
-//                             ? (value) => onChanged(value)
-//                             : null))
-//               ],
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
