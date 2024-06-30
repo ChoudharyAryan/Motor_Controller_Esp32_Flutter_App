@@ -26,7 +26,7 @@ class NormalPopUp extends StatelessWidget {
       int? result;
       await ShowMyWarning(context, 'restart').then((value) => result = value);
       if (result == 1) {
-        context.read<MotorControllerBloc>().add(SendMessage(reset));
+        context.read<MotorControllerBloc>().add(SendMessage(reset, typeOfBall));
         context
             .read<MotorControllerBloc>()
             .add(Disconnect(results: const [], list: typeOfBall));

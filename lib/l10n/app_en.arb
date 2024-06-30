@@ -16,6 +16,8 @@
     "@normalfast":{
         "description": "Type of Ball"
     },   
+    "feeder":"feeder",
+    "@feeder":{"description": "ball feeder"},
     "normalslow": "Normal Slow",
     "@normalslow":{
         "description": "Type of Ball"

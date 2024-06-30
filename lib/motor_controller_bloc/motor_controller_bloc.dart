@@ -6,6 +6,7 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:location/location.dart' show Location;
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:meta/meta.dart';
@@ -88,6 +89,9 @@ class MotorControllerBloc
     if (bluetoothEnabled != null && !bluetoothEnabled) {
       //log('am i even asking for permission');
       await FlutterBluetoothSerial.instance.openSettings();
+      emit(const MotorControllerInitial(
+          isDiscovering: false, isloading: false, isConnecting: false));
+      return;
     }
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
@@ -132,11 +136,11 @@ class MotorControllerBloc
       await for (BluetoothDiscoveryResult r in FlutterBluetoothSerial.instance
           .startDiscovery()
           .where((r) => r.device.name?.startsWith('ESP32') ?? false)) {
-        //log(r.device.name.toString());
+        log(r.device.name.toString());
         //log('adding the discovey result to the list');
-        if (!discoveredDevices.contains(r.toString())) {
+        if (!discoveredDevices.contains(r.device.address)) {
           event.results.add(r);
-          discoveredDevices.add(r.toString());
+          discoveredDevices.add(r.device.address);
           emit(MotorControllerDiscovering(
               isDiscovering: true,
               isDiscoverd: false,
@@ -148,7 +152,7 @@ class MotorControllerBloc
         }
       }
     } on Exception catch (e) {
-      // log('There is an exception inside the _startDiscovery function $e');
+      log('There is an exception inside the _startDiscovery function $e');
       emit(MotorControllerInitial(
           string: e.toString().contains('no_permissions')
               ? 'Bluetooth and Location Acess Required'
@@ -195,10 +199,19 @@ class MotorControllerBloc
 
           try {
             //log('have connection and about to begin start listening');
-            _dataController?.close();
+            await _dataController?.close();
             _dataController = StreamController<String>();
-            streamSubscriptiondata?.cancel();
-            streamSubscriptiondata = connection?.input?.listen(_onDataRecived);
+            await streamSubscriptiondata?.cancel();
+            streamSubscriptiondata = connection?.input?.listen(_onDataRecived,
+                onError: (error) async {
+              log('Connection error: $error');
+              await _handleDisconnection(emit, 'Connection error: $error');
+              return;
+            }, onDone: () async {
+              log('Connection lost');
+              await _handleDisconnection(emit, 'Connection lost');
+              return;
+            });
             //log('What is the probelem $incomingData');
             //await _sendMessage(const SendMessage('i'), emit);
             //log('came back and now going to emit state Connectedadn Listening');
@@ -272,6 +285,59 @@ class MotorControllerBloc
     if (!(await location.serviceEnabled())) {
       await location.requestService();
     }
+    // if (connection == null || !connection!.isConnected) {
+    //   await streamSubscriptiondata?.cancel();
+    //   streamSubscriptiondata = null;
+    //   await _dataController?.close();
+    //   int len = event.typeOfBalls.length;
+    //   for (int i = 0; i < len; i++) {
+    //     event.typeOfBalls[i][2] = false;
+    //   }
+    //   emit(MotorControllerDisconnected(
+    //       exception: null,
+    //       isDiscovering: false,
+    //       isloading: false,
+    //       str: 'The Bowler Got disconnected!',
+    //       results: const [],
+    //       isDisconnecting: false,
+    //       isConnecting: false));
+    //   log('About to emit the initiallllllll');
+    //   emit(const MotorControllerInitial(
+    //       isDiscovering: false, isloading: false, isConnecting: false));
+    // }
+    // try {
+    //   if (!connection!.isConnected) {
+    //     emit(MotorControllerDisconnected(
+    //         exception: null,
+    //         isDiscovering: false,
+    //         isloading: false,
+    //         str: 'The Bowler Got disconnected!',
+    //         results: const [],
+    //         isDisconnecting: false,
+    //         isConnecting: false));
+    //     log('About to emit the initiallllllll');
+    //     emit(const MotorControllerInitial(
+    //         isDiscovering: false, isloading: false, isConnecting: false));
+    //     await streamSubscriptiondata?.cancel();
+    //     streamSubscriptiondata = null;
+    //     await _dataController?.close();
+    //   }
+    // } catch (e) {
+    //   emit(MotorControllerDisconnected(
+    //       exception: null,
+    //       isDiscovering: false,
+    //       isloading: false,
+    //       str: 'The Bowler Got disconnected!',
+    //       results: const [],
+    //       isDisconnecting: false,
+    //       isConnecting: false));
+    //   log('About to emit the initiallllllll');
+    //   emit(const MotorControllerInitial(
+    //       isDiscovering: false, isloading: false, isConnecting: false));
+    //   await streamSubscriptiondata?.cancel();
+    //   streamSubscriptiondata = null;
+    //   await _dataController?.close();
+    // }
     if (connection != null && connection!.isConnected) {
       try {
         //log('Inside the sendMessage function');
@@ -299,6 +365,11 @@ class MotorControllerBloc
         }
       }
     } else {
+      int len = event.typeOfBalls.length;
+      for (int i = 0; i < len; i++) {
+        event.typeOfBalls[i][2] = false;
+      }
+      log('the machine has been dissconneted');
       emit(MotorControllerDisconnected(
           exception: null,
           isDiscovering: false,
@@ -307,6 +378,12 @@ class MotorControllerBloc
           results: const [],
           isDisconnecting: false,
           isConnecting: false));
+      log('About to emit the initiallllllll');
+      emit(const MotorControllerInitial(
+          isDiscovering: false, isloading: false, isConnecting: false));
+      await streamSubscriptiondata?.cancel();
+      streamSubscriptiondata = null;
+      await _dataController?.close();
     }
   }
 
@@ -411,6 +488,33 @@ class MotorControllerBloc
         data: incomingData,
         exception: null));
 
-    log(" Data is incoming $incomingData");
+    // log(" Data is incoming $incomingData");
+  }
+
+  Future<void> _handleDisconnection(
+      Emitter<MotorControllerState> emit, String message) async {
+    try {
+      connection?.dispose();
+      await _dataController?.close();
+      await streamSubscriptiondata?.cancel();
+    } finally {
+      if (!emit.isDone) {
+        emit(MotorControllerDisconnected(
+            isDiscovering: false,
+            isConnecting: false,
+            isloading: false,
+            exception: null,
+            results: const [],
+            isDisconnecting: false,
+            str: ''));
+        emit(const MotorControllerInitial(
+          isDiscovering: false,
+          isConnecting: false,
+          isloading: false,
+        ));
+      } else {
+        return;
+      }
+    }
   }
 }

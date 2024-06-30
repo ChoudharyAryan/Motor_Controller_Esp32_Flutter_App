@@ -18,7 +18,8 @@ class ConnectToDeviceAndStartListening extends MotorControllerEvent {
 
 class SendMessage extends MotorControllerEvent {
   final String text;
-  const SendMessage(this.text);
+  List typeOfBalls;
+  SendMessage(this.text, this.typeOfBalls);
 }
 
 class Disconnect extends MotorControllerEvent {

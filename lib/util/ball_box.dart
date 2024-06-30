@@ -6,11 +6,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 
 class BallBox extends StatefulWidget {
   final String inc;
   final String dec;
+  List typeOfBalls;
   int fLevel;
 
   final String ballType;
@@ -23,6 +25,7 @@ class BallBox extends StatefulWidget {
       {super.key,
       required this.inc,
       required this.fLevel,
+      required this.typeOfBalls,
       required this.swingLevel,
       required this.setSwing,
       required this.dec,
@@ -41,6 +44,7 @@ class _BallBoxState extends State<BallBox> {
   late String dec;
   late bool powerOn;
   late int supSwingLevel;
+  //late int fLevel;
   //late int swingLevel;
   late final setSwing;
   late VoidCallback onTap;
@@ -54,6 +58,7 @@ class _BallBoxState extends State<BallBox> {
     supSwingLevel = widget.swingLevel;
     setSwing = widget.setSwing;
     //swingLevel = widget.swingLevel;
+    //fLevel = widget.fLevel;
     onTap = widget.onTap;
     dec = widget.dec;
     ballType = widget.ballType;
@@ -112,7 +117,7 @@ class _BallBoxState extends State<BallBox> {
                 ),
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                width: ballType == 'Forward'
+                width: ballType == 'forward'
                     ? widget.fLevel /
                         17 *
                         (MediaQuery.of(context).size.width * 0.85)
@@ -126,7 +131,13 @@ class _BallBoxState extends State<BallBox> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      ballType,
+                      ballType == 'forward'
+                          ? AppLocalizations.of(context)!.forward
+                          : ballType == 'rightswing'
+                              ? AppLocalizations.of(context)!.rightswing
+                              : ballType == 'leftswing'
+                                  ? AppLocalizations.of(context)!.leftswing
+                                  : '',
                       style: GoogleFonts.bebasNeue(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
@@ -143,7 +154,7 @@ class _BallBoxState extends State<BallBox> {
                             if (widget.powerOn) {
                               log('increase button pressed');
                               context.read<MotorControllerBloc>().add(
-                                    SendMessage('$inc#'),
+                                    SendMessage('$inc#', widget.typeOfBalls),
                                   );
                               setState(() {
                                 if (widget.fLevel < 17) {
@@ -176,7 +187,7 @@ class _BallBoxState extends State<BallBox> {
                           onPressed: () {
                             if (widget.powerOn) {
                               context.read<MotorControllerBloc>().add(
-                                    SendMessage('$dec#'),
+                                    SendMessage('$dec#', widget.typeOfBalls),
                                   );
                               setState(() {
                                 if (widget.fLevel > 0) {

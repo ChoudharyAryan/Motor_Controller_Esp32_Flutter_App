@@ -93,29 +93,38 @@ class _MainPage extends State<MainPage> {
     _loadUserName();
   }
 
-  void _startTimer(BuildContext context) async {
-    BlocListener<MotorControllerBloc, MotorControllerState>(
-        listener: (context, state) {
-      if (state is MotorControllerDiscovering) {
-        Timer.periodic(const Duration(seconds: 5), (timer) {
-          log('gona call the setstate');
-          setState(() {});
+  // void _startTimer(BuildContext context) async {
+  //   while (context.read<MotorControllerBloc>().state ==
+  //       MotorControllerDiscovering) {
+  //     log('NOWWWWWWWWWWWWWWWWWWWWW');
+  //     setState(() {});
+  //   }
+  // log('kkkkkkkkkkkkkkkkkkkkk');
+  // log(context.read<MotorControllerBloc>().state.toString());
+  // BlocListener<MotorControllerBloc, MotorControllerState>(
+  //     listener: (context, state) {
+  //   log('GGGGGGGGGGGGGGGGGGGGGGG');
 
-          //_startTimer();
-        });
-      } else {
-        log('gona return from _startTimer function');
-        return;
-      }
-    });
-  }
+  //   if (state is MotorControllerDiscovering) {
+  //     Timer.periodic(const Duration(seconds: 5), (timer) {
+  //       log('gona call the setstate');
+  //       setState(() {});
+
+  //       //_startTimer();
+  //     });
+  //   } else {
+  //     log('gona return from _startTimer function');
+  //     return;
+  //   }
+  // });
+  // }
 
   void updateData(BuildContext context) {
-    log('inside the updateData function');
+    //log('inside the updateData function');
     data = context.read<MotorControllerBloc>().state.data;
-    log('Updated Data is : $data');
+    //log('Updated Data is : $data');
     if (data != null) {
-      log('dataStream is $data');
+      //log('dataStream is $data');
       RegExp regExpF = RegExp(r'F(\d+)\*');
       RegExp regExpR = RegExp(r'R(\d+)[#*]');
       RegExp regExpN = RegExp(r'N(\d+)\*');
@@ -133,6 +142,8 @@ class _MainPage extends State<MainPage> {
         setState(() {
           fLevel = int.parse(valueCString);
         });
+      } else {
+        log('FUCK THE C BLOK');
       }
       if (matchM != null) {
         String valueMString = matchM.group(1)!;
@@ -144,7 +155,7 @@ class _MainPage extends State<MainPage> {
           powerSwitchHadChanged(0);
         }
       } else {
-        print("No match found for M.");
+        //print("No match found for M.");
       }
       if (matchS != null) {
         String valueSString = matchS.group(1)!;
@@ -152,9 +163,9 @@ class _MainPage extends State<MainPage> {
           speed = valueSString;
         });
 
-        print("The string value after S is: $valueSString");
+        // print("The string value after S is: $valueSString");
       } else {
-        print("No match found for S.");
+        //print("No match found for S.");
       }
       if (matchN != null) {
         String value = matchN.group(1)!;
@@ -162,9 +173,9 @@ class _MainPage extends State<MainPage> {
           swingLevel = int.parse(value);
         });
 
-        log("The value after N is: $value");
+        //log("The value after N is: $value");
       } else {
-        print("No match found.");
+        //print("No match found.");
       }
       if (matchF != null) {
         String valueFString = matchF.group(1)!;
@@ -179,7 +190,7 @@ class _MainPage extends State<MainPage> {
         }
         //print("The integer value after F is: $valueF");
       } else {
-        print("No match found for F.");
+        //print("No match found for F.");
       }
       if (matchR != null) {
         String valueRString = matchR.group(1)!;
@@ -190,28 +201,30 @@ class _MainPage extends State<MainPage> {
 
         //print("The integer value after R is: $valueR");
       } else {
-        print("No match found for R.");
+        //print("No match found for R.");
       }
     }
   }
 
-  void _startTimeragain(BuildContext context) async {
-    BlocListener<MotorControllerBloc, MotorControllerState>(
-        listener: (context, state) {
-      if (state is MotorControllerDiscovering) {
-        Timer.periodic(const Duration(seconds: 3), (timer) {
-          log('gona call the setstate');
-          setState(() {});
+  // void checkConnection(BuildContext context) {}
 
-          //_startTimer();
-        });
-      } else {
-        //log('gona return from _startTimer function');
-        return;
-      }
-    });
-    _startTimer(context);
-  }
+  // void _startTimeragain(BuildContext context) async {
+  //   BlocListener<MotorControllerBloc, MotorControllerState>(
+  //       listener: (context, state) {
+  //     if (state is MotorControllerDiscovering) {
+  //       Timer.periodic(const Duration(seconds: 3), (timer) {
+  //         log('gona call the setstate');
+  //         setState(() {});
+
+  //         //_startTimer();
+  //       });
+  //     } else {
+  //       //log('gona return from _startTimer function');
+  //       return;
+  //     }
+  //   });
+  //   _startTimer(context);
+  // }
 
   int feeder = 0;
   bool isConnected = false;
@@ -220,6 +233,7 @@ class _MainPage extends State<MainPage> {
   //   pref = await SharedPreferences.getInstance();
   //   feeder = pref.getInt('feeder') ?? 0;
   // }
+  Timer? _discoveryTimer;
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +248,16 @@ class _MainPage extends State<MainPage> {
       ],
       child: BlocConsumer<MotorControllerBloc, MotorControllerState>(
         listener: (context, state) async {
+          // _discoveryTimer = Timer.periodic(Duration(seconds: 3), (timer) {
+          //   if (state.isDiscovering) {
+          //     log("SADDLY THE STATE ISDISCOVERING");
+          //   } else {
+          //     log("AND NOW IT IS NOT");
+          //     _discoveryTimer?.cancel();
+          //     _discoveryTimer = null;
+          //   }
+          // });
+
           if (state.isloading) {
             LoadingScreen().show(context: context, text: state.loadingText);
           } else {
@@ -247,12 +271,31 @@ class _MainPage extends State<MainPage> {
           if (state is MotorControllerDiscovering) {
             //setState(() {});
             isConnected = false;
+            log('FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFff');
+            _startPeriodicTimer(state);
+            //setState(() {});
+            //_discoveryTimer =
 
-            _startTimer(context);
-            _startTimeragain(context);
-          } else if (state is MotorControllerConnectedAndListening) {
+            // Timer.periodic(const Duration(seconds: 3), (timer) {
+            //   log('gona call the setstate bitchess');
+            //   //log(context.read<MotorControllerBloc>().state.toString());
+            //   if (state.isDiscovering) {
+            //     log(context.read<MotorControllerBloc>().state.toString());
+            //     //log('WHYYYYYYYYYYYYYYYYYYYYY');
+            //     state.isDiscovering ? log("WHY THOUGH") : log("OK THEN");
+            //     setState(() {});
+            //   }
+            // });
+
+            // _startTimer(context);
+            // _startTimeragain(context);
+          } else {
+            _cancelPeriodicTimer();
+          }
+          if (state is MotorControllerConnectedAndListening) {
             //log(state.toString());
             //log('this is the state now');
+            //_discoveryTimer?.cancel();
 
             isConnected = true;
             updateData(context);
@@ -404,27 +447,26 @@ class _MainPage extends State<MainPage> {
                                       ? Colors.black
                                       : Colors.white,
                                   () {},
+                                  typesOfBalls,
                                 ),
                                 Commbutton1(
-                                  const FaIcon(FontAwesomeIcons.stop),
-                                  state.isConnected ? 'j#' : null,
-                                  context,
-                                  state.isConnected
-                                      ? Colors.black
-                                      : Colors.white,
-                                  () {
-                                    powerSwitchHadChanged(-1);
-                                  },
-                                ),
+                                    const FaIcon(FontAwesomeIcons.stop),
+                                    state.isConnected ? 'j#' : null,
+                                    context,
+                                    state.isConnected
+                                        ? Colors.black
+                                        : Colors.white, () {
+                                  powerSwitchHadChanged(-1);
+                                }, typesOfBalls),
                                 Commbutton1(
-                                  const Icon(Icons.arrow_downward_rounded),
-                                  state.isConnected ? 'k#' : null,
-                                  context,
-                                  state.isConnected
-                                      ? Colors.black
-                                      : Colors.white,
-                                  () {},
-                                )
+                                    const Icon(Icons.arrow_downward_rounded),
+                                    state.isConnected ? 'k#' : null,
+                                    context,
+                                    state.isConnected
+                                        ? Colors.black
+                                        : Colors.white,
+                                    () {},
+                                    typesOfBalls)
                               ],
                             ),
                           ),
@@ -450,7 +492,8 @@ class _MainPage extends State<MainPage> {
                                           context
                                               .read<MotorControllerBloc>()
                                               .add(
-                                                SendMessage('x$feeder#'),
+                                                SendMessage(
+                                                    'x$feeder#', typesOfBalls),
                                               );
                                           await pref.setInt('feeder', feeder);
                                           setState(() {});
@@ -474,7 +517,8 @@ class _MainPage extends State<MainPage> {
                                           context
                                               .read<MotorControllerBloc>()
                                               .add(
-                                                SendMessage('x$feeder#'),
+                                                SendMessage(
+                                                    'x$feeder#', typesOfBalls),
                                               );
                                           await pref.setInt('feeder', feeder);
                                           setState(() {});
@@ -525,24 +569,24 @@ class _MainPage extends State<MainPage> {
                                                 .dataStream,
                                             builder: (context, snapshot) {
                                               if (snapshot.hasData) {
-                                                return Text(snapshot.data!,
-                                                    style:
-                                                        GoogleFonts.bebasNeue(
-                                                            fontSize: 15));
-                                                // String fspeed = snapshot.data!;
-                                                // RegExp regExps =
-                                                //     RegExp(r'S([^*]+)\*');
-                                                // Match? matchs =
-                                                //     regExps.firstMatch(fspeed);
-                                                // String valueS = matchs != null
-                                                //     ? matchs.group(1)!
-                                                //     : 'No match found';
-                                                // log("this is the values : $valueS");
-                                                // return Text(
-                                                //   "Speed : $valueS",
-                                                //   style: GoogleFonts.bebasNeue(
-                                                //       fontSize: 15),
-                                                // );
+                                                // return Text(snapshot.data!,
+                                                //     style:
+                                                //         GoogleFonts.bebasNeue(
+                                                //             fontSize: 15));
+                                                String fspeed = snapshot.data!;
+                                                RegExp regExps =
+                                                    RegExp(r'S([^*]+)\*');
+                                                Match? matchs =
+                                                    regExps.firstMatch(fspeed);
+                                                String valueS = matchs != null
+                                                    ? matchs.group(1)!
+                                                    : 'No match found';
+                                                log("this is the values : $valueS");
+                                                return Text(
+                                                  "Speed : $valueS",
+                                                  style: GoogleFonts.bebasNeue(
+                                                      fontSize: 18),
+                                                );
                                               } else if (snapshot.hasError) {
                                                 //log('error in snapshot //${snapshot.error}');
                                                 return Text(
@@ -562,9 +606,7 @@ class _MainPage extends State<MainPage> {
                                   GestureDetector(
                                     onTap: () {
                                       context.read<MotorControllerBloc>().add(
-                                            const SendMessage(
-                                              'b',
-                                            ),
+                                            SendMessage('b', typesOfBalls),
                                           );
                                       setState(() {
                                         ballfeeder = !ballfeeder;
@@ -603,7 +645,8 @@ class _MainPage extends State<MainPage> {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Text(
-                                                'feeder',
+                                                AppLocalizations.of(context)!
+                                                    .feeder,
                                                 style: GoogleFonts.bebasNeue(
                                                   fontSize: 18,
                                                   color: ballfeeder
@@ -663,6 +706,7 @@ class _MainPage extends State<MainPage> {
                                           childAspectRatio: 1 / 0.4),
                                   itemBuilder: (context, index) {
                                     return BallBox(
+                                      typeOfBalls: typesOfBalls,
                                       fLevel: fLevel,
                                       swingLevel: swingLevel,
                                       setSwing: (val) {
@@ -675,7 +719,8 @@ class _MainPage extends State<MainPage> {
                                         /// log('ballbox no . ${typesOfBalls[index][0]} tapped on!');
                                         context.read<MotorControllerBloc>().add(
                                             SendMessage(
-                                                '${typesOfBalls[index][5]}'));
+                                                '${typesOfBalls[index][5]}',
+                                                typesOfBalls));
                                         //log(state.toString());
                                         // log(isConnected.toString());
                                         //log(typesOfBalls[index][2].toString());
@@ -713,11 +758,14 @@ class _MainPage extends State<MainPage> {
 
   String ballname(int index) {
     if (index == 0) {
-      return AppLocalizations.of(context)!.forward;
+      return 'forward';
+      //AppLocalizations.of(context)!.forward;
     } else if (index == 1) {
-      return AppLocalizations.of(context)!.rightswing;
+      return 'rightswing';
+      //AppLocalizations.of(context)!.rightswing;
     } else if (index == 2) {
-      return AppLocalizations.of(context)!.leftswing;
+      return 'leftswing';
+      //AppLocalizations.of(context)!.leftswing;
     } else {
       return '';
     }
@@ -732,4 +780,26 @@ class _MainPage extends State<MainPage> {
   //     await pref.setInt('b3', val);
   //   }
   // }
+  void _startPeriodicTimer(MotorControllerState state) {
+    // Cancel any existing timer
+    _cancelPeriodicTimer();
+
+    // Start a new periodic timer
+    _discoveryTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (state.isDiscovering) {
+        log("SADDLY THE STATE ISDISCOVERING");
+        setState(() {});
+      } else {
+        log("AND NOW IT IS NOT");
+        _cancelPeriodicTimer();
+      }
+    });
+  }
+
+  void _cancelPeriodicTimer() {
+    if (_discoveryTimer != null) {
+      _discoveryTimer?.cancel();
+      _discoveryTimer = null;
+    }
+  }
 }
