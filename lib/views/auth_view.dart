@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:motor_controller_esp32/MainPage.dart';
+import 'package:motor_controller_esp32/views/MainPage.dart';
 import 'package:motor_controller_esp32/services/auth/auth_exceptions.dart';
 import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';

@@ -1,1 +1,1 @@
-enum ActionMenu { language, logout, restart }
+enum ActionMenu { language, logout, restart, aboutUs, contactUs }

@@ -8,7 +8,7 @@
     "@hi":{
         "description": "A Programmer Gretting"
     },
-    "forward": "Forward",
+    "forward": "Straight",
     "@multiLanguage":{
         "description": "Type of Ball"
     },   
@@ -16,12 +16,16 @@
     "@normalfast":{
         "description": "Type of Ball"
     },   
+    "logoutwarning":"Logout Warning",
+    "@logoutwarning":{"description": "logout warning"},
     "feeder":"feeder",
     "@feeder":{"description": "ball feeder"},
     "normalslow": "Normal Slow",
     "@normalslow":{
         "description": "Type of Ball"
     },   
+    "cancel":"cancel",
+    "@cancel":{"description": "command cancel"},
     "rightswing": "Right Swing",
     "@rightswing":{
         "description": "Type of Ball"

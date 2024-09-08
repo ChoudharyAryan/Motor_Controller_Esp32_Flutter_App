@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<void> ShowMyDilog(BuildContext context, String content) async {
   return showDialog<void>(
@@ -123,7 +126,7 @@ Future<int?> ShowMyWarning(BuildContext context, String text) async {
                 ),
               )
             : Text(
-                'Are you sure you want to log out?',
+                AppLocalizations.of(context)!.logoutwarning,
                 style: GoogleFonts.radioCanada(
                   fontSize: 18,
                   color: Colors.black,
@@ -144,7 +147,135 @@ Future<int?> ShowMyWarning(BuildContext context, String text) async {
           ),
           TextButton(
             child: Text(
-              'cancel',
+              AppLocalizations.of(context)!.cancel,
+              style: GoogleFonts.bebasNeue(
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(0);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> contactUsDialog(BuildContext context) {
+  return showDialog<void>(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey[300],
+        title: Text(
+          'Contact us',
+          style: GoogleFonts.bebasNeue(
+            fontSize: 25,
+            color: Colors.black,
+          ),
+        ),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            GestureDetector(
+              onTap: () async {
+                const email = 'aryanschoudharyofficial@gmail.com';
+                final subject = Uri.encodeComponent('Test');
+                final body = Uri.encodeComponent('To Sports Ami');
+                final url =
+                    Uri.parse('mailto:$email?subject=$subject&body=$body');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                } else {
+                  Navigator.pop(context);
+                  ShowErrorSnackBar(context, 'can not launch action');
+                }
+              },
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade500,
+                        offset: const Offset(4.0, 4.0),
+                        blurRadius: 15.0,
+                        spreadRadius: 1.0,
+                      ),
+                      const BoxShadow(
+                        color: Colors.white,
+                        offset: Offset(-4.0, -4.0),
+                        blurRadius: 15.0,
+                        spreadRadius: 1.0,
+                      )
+                    ],
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    )),
+                child: const Icon(
+                  Icons.email_rounded,
+                  size: 35,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () async {
+                const phone =
+                    '8107842295'; // Remove spaces or special characters
+                final url = Uri.parse('tel:$phone');
+                try {
+                  // if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                  // }
+                  // else {
+                  //   throw 'Could not launch $url';
+                  // }
+                } catch (e) {
+                  log(e.toString());
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade500,
+                        offset: const Offset(4.0, 4.0),
+                        blurRadius: 15.0,
+                        spreadRadius: 1.0,
+                      ),
+                      const BoxShadow(
+                        color: Colors.white,
+                        offset: Offset(-4.0, -4.0),
+                        blurRadius: 15.0,
+                        spreadRadius: 1.0,
+                      )
+                    ],
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    )),
+                width: 60,
+                height: 60,
+                child: const Icon(
+                  Icons.phone,
+                  size: 35,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
               style: GoogleFonts.bebasNeue(
                 fontSize: 18,
                 color: Colors.black,

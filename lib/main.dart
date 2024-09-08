@@ -8,14 +8,14 @@ import 'package:motor_controller_esp32/firebase_options.dart';
 import 'package:motor_controller_esp32/l10n/l10n.dart';
 import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
 import 'package:motor_controller_esp32/services/auth/firebase_auth_provider.dart';
-import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
+import 'package:motor_controller_esp32/views/auth_view.dart';
 import 'package:motor_controller_esp32/util/loading_screen/loading_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 //import 'package:localization_i18n_arb/l10n/l10n.dart';
 
-import './MainPage.dart';
+import 'views/MainPage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

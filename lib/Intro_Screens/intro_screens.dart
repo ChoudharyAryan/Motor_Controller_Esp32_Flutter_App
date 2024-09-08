@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:motor_controller_esp32/Intro_Screens/onboarding_screens_1.dart';
 import 'package:motor_controller_esp32/Intro_Screens/onboarding_screens_2.dart';
 import 'package:motor_controller_esp32/Intro_Screens/onboarding_screens_3.dart';
-import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
+import 'package:motor_controller_esp32/views/auth_view.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class IntroScreens extends StatefulWidget {

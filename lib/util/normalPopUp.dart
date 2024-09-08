@@ -4,12 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:motor_controller_esp32/views/aboutUs.dart';
 import 'package:motor_controller_esp32/enums/action_menu.dart';
 import 'package:motor_controller_esp32/main.dart';
 
 import 'package:motor_controller_esp32/motor_controller_bloc/motor_controller_bloc.dart';
 import 'package:motor_controller_esp32/services/auth/bloc/auth_bloc_bloc.dart';
-import 'package:motor_controller_esp32/services/auth/views/auth_view.dart';
+import 'package:motor_controller_esp32/views/auth_view.dart';
 import 'package:motor_controller_esp32/util/GenericAlertDilog.dart';
 
 class NormalPopUp extends StatelessWidget {
@@ -73,6 +74,11 @@ class NormalPopUp extends StatelessWidget {
             case ActionMenu.restart:
               _showWarningDialog(
                   context, reset, context.read<MotorControllerBloc>().state);
+            case ActionMenu.aboutUs:
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const aboutUs()));
+            case ActionMenu.contactUs:
+              contactUsDialog(context);
           }
         },
         itemBuilder: (context) {
@@ -107,6 +113,26 @@ class NormalPopUp extends StatelessWidget {
                 ),
               ),
             ),
+            PopupMenuItem(
+              value: ActionMenu.aboutUs,
+              child: Text(
+                'AboutUs',
+                style: GoogleFonts.josefinSans(
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            PopupMenuItem(
+              value: ActionMenu.contactUs,
+              child: Text(
+                'ContactUs',
+                style: GoogleFonts.josefinSans(
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            )
           ];
         },
       ),
